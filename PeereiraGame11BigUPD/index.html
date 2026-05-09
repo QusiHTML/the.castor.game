@@ -1,0 +1,3605 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>PEEREIRA NEXTBOT</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      font-family: "Arial Black", Arial, sans-serif;
+      color: #fff;
+      user-select: none
+    }
+
+    #c {
+      display: block;
+      width: 100vw;
+      height: 100vh
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      text-align: center;
+      padding: 20px
+    }
+
+    #startScreen {
+      background: radial-gradient(ellipse at center, #1a0000 0%, #000 80%)
+    }
+
+    #startScreen h1 {
+      font-size: clamp(2rem, 7vw, 5.5rem);
+      color: #ff0000;
+      text-shadow: 0 0 20px #f00, 0 0 60px #f00, 0 0 100px #f00;
+      animation: glow 1.2s ease-in-out infinite alternate;
+      margin-bottom: .5rem
+    }
+
+    #startScreen .sub {
+      font-size: clamp(.7rem, 2vw, 1.1rem);
+      color: #ff8888;
+      margin-bottom: .3rem;
+      letter-spacing: 2px
+    }
+
+    #startScreen .lore {
+      font-size: clamp(.6rem, 1.5vw, .9rem);
+      color: #888;
+      max-width: 600px;
+      margin: 1rem auto;
+      line-height: 1.6
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #8b0000, #cc0000);
+      border: 2px solid #ff4444;
+      color: #fff;
+      font-family: inherit;
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      font-weight: 900;
+      padding: .8rem 2.5rem;
+      margin: .5rem;
+      cursor: pointer;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      transition: all .2s;
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%)
+    }
+
+    .btn:hover {
+      background: linear-gradient(135deg, #cc0000, #ff0000);
+      box-shadow: 0 0 20px #f00;
+      transform: scale(1.05)
+    }
+
+    .controls {
+      font-size: clamp(.6rem, 1.5vw, .85rem);
+      color: #666;
+      margin-top: 1rem;
+      line-height: 2
+    }
+
+    #deathScreen {
+      background: rgba(0, 0, 0, .95);
+      display: none
+    }
+
+    #deathScreen h1 {
+      font-size: clamp(2rem, 8vw, 6rem);
+      color: #ff0000;
+      text-shadow: 0 0 30px #f00;
+      animation: shake .1s infinite
+    }
+
+    #deathScreen .face {
+      width: clamp(100px, 30vw, 220px);
+      border-radius: 12px;
+      margin: 1rem auto;
+      border: 4px solid #f00;
+      box-shadow: 0 0 30px #f00
+    }
+
+    #winScreen {
+      background: radial-gradient(ellipse at center, #001a00 0%, #000 80%);
+      display: none
+    }
+
+    #winScreen h1 {
+      font-size: clamp(1.5rem, 6vw, 4rem);
+      color: #00ff44;
+      text-shadow: 0 0 20px #0f4, 0 0 60px #0f4;
+      margin-bottom: 1rem
+    }
+
+    #winScreen .face {
+      width: clamp(80px, 25vw, 180px);
+      border-radius: 12px;
+      margin: 1rem auto;
+      border: 4px solid #0f4;
+      box-shadow: 0 0 30px #0f4
+    }
+
+    #ui {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 20
+    }
+
+    #timer {
+      position: fixed;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 10px #fff;
+      background: rgba(0, 0, 0, .5);
+      padding: .3rem 1.2rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, .2)
+    }
+
+    #warning {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(1rem, 4vw, 2.5rem);
+      font-weight: 900;
+      color: #ff0000;
+      text-shadow: 0 0 20px #f00;
+      text-align: center;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none
+    }
+
+    #stamina {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 8px;
+      background: rgba(255, 255, 255, .2);
+      border-radius: 4px;
+      overflow: hidden
+    }
+
+    #staminaBar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #00cc44, #44ff88);
+      border-radius: 4px;
+      transition: width .1s
+    }
+
+    #enemyCount {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: .8rem;
+      color: #ff4444;
+      text-shadow: 0 0 8px #f00
+    }
+
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      pointer-events: none
+    }
+
+    #crosshair::before,
+    #crosshair::after {
+      content: "";
+      position: absolute;
+      background: rgba(255, 255, 255, .8)
+    }
+
+    #crosshair::before {
+      width: 2px;
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%)
+    }
+
+    #crosshair::after {
+      width: 100%;
+      height: 2px;
+      top: 50%;
+      transform: translateY(-50%)
+    }
+
+    #redOverlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 0, 0, 0) 100%);
+      transition: opacity .1s
+    }
+
+    #scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 14;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, .03) 2px, rgba(0, 0, 0, .03) 4px);
+      opacity: .5
+    }
+
+    #clickPrompt {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .7);
+      z-index: 30;
+      font-size: clamp(1rem, 3vw, 1.8rem);
+      cursor: pointer;
+      flex-direction: column;
+      gap: 1rem
+    }
+
+    #clickPrompt .big {
+      font-size: clamp(1.5rem, 5vw, 3rem);
+      color: #ff4444
+    }
+
+    /* Mobile joystick */
+    #joystickZone {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 130px;
+      height: 130px;
+      z-index: 25;
+      pointer-events: auto;
+      display: none;
+      touch-action: none
+    }
+
+    #joystickBase {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .08);
+      border: 2px solid rgba(255, 255, 255, .22);
+      position: relative
+    }
+
+    #joystickKnob {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, rgba(255, 120, 120, .9), rgba(255, 50, 50, .6));
+      border: 2px solid rgba(255, 80, 80, .95);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px rgba(255, 80, 80, .4)
+    }
+
+    #lookZone {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 55vw;
+      height: 100vh;
+      z-index: 25;
+      pointer-events: auto;
+      display: none;
+      touch-action: none
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #f00, 0 0 30px #f00
+      }
+
+      to {
+        text-shadow: 0 0 20px #f00, 0 0 60px #f00, 0 0 100px #f00
+      }
+    }
+
+    @keyframes shake {
+      0% {
+        transform: translate(-1px, -1px)
+      }
+
+      25% {
+        transform: translate(1px, -1px)
+      }
+
+      50% {
+        transform: translate(-1px, 1px)
+      }
+
+      75% {
+        transform: translate(1px, 1px)
+      }
+
+      100% {
+        transform: translate(-1px, -1px)
+      }
+    }
+
+    @keyframes flicker {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .85
+      }
+    }
+
+    @keyframes quoteFade {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(6px)
+      }
+
+      12% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0)
+      }
+
+      75% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0)
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-4px)
+      }
+    }
+
+    #blocker {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      z-index: 28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+      cursor: pointer
+    }
+
+    #blocker .msg {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: #ccc;
+      text-align: center
+    }
+
+    #blocker .big {
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+      color: #ff4444
+    }
+
+    #settingsBtn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 22;
+      background: rgba(0, 0, 0, .65);
+      border: 1px solid rgba(255, 255, 255, .2);
+      color: #ccc;
+      font-size: 1rem;
+      padding: .3rem .65rem;
+      cursor: pointer;
+      border-radius: 4px;
+      pointer-events: auto;
+      transition: all .2s;
+      font-family: inherit
+    }
+
+    #settingsBtn:hover {
+      border-color: #ff4444;
+      color: #fff
+    }
+
+    #settingsOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .55);
+      z-index: 64;
+      display: none
+    }
+
+    #settingsPanel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #090910;
+      border: 2px solid #222244;
+      padding: 1.8rem 2rem;
+      width: min(92vw, 340px);
+      z-index: 65;
+      display: none;
+      flex-direction: column;
+      gap: 1.1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, .9)
+    }
+
+    #settingsPanel h2 {
+      color: #ff4444;
+      font-size: 1rem;
+      letter-spacing: 3px;
+      text-align: center;
+      text-transform: uppercase;
+      margin-bottom: .2rem
+    }
+
+    .srow {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem
+    }
+
+    .srow label {
+      color: #888;
+      font-size: .72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between
+    }
+
+    .srow label span {
+      color: #fff
+    }
+
+    .srow input[type=range] {
+      width: 100%;
+      accent-color: #ff4444;
+      cursor: pointer
+    }
+
+    .srow-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .srow-toggle .slbl {
+      color: #888;
+      font-size: .72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    #touchToggle {
+      background: #1a0000;
+      border: 1px solid #550000;
+      color: #884444;
+      font-family: inherit;
+      font-size: .72rem;
+      padding: .28rem .7rem;
+      cursor: pointer;
+      border-radius: 3px;
+      letter-spacing: 1px;
+      transition: all .2s
+    }
+
+    #touchToggle.on {
+      background: #001a00;
+      border-color: #005500;
+      color: #44aa66
+    }
+
+    #settingsClose {
+      background: linear-gradient(135deg, #6b0000, #aa0000);
+      border: 1px solid #dd3333;
+      color: #fff;
+      font-family: inherit;
+      font-size: .85rem;
+      padding: .5rem;
+      cursor: pointer;
+      letter-spacing: 2px;
+      border-radius: 3px;
+      margin-top: .3rem;
+      transition: all .2s
+    }
+
+    /* ── Portrait lock overlay ── */
+    #portraitOverlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 400;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1.8rem;
+      pointer-events: all
+    }
+
+    #portraitOverlay .pIcon {
+      width: 70px;
+      height: 70px;
+      border: 4px solid #ff4444;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: rotateHint 2s ease-in-out infinite alternate
+    }
+
+    #portraitOverlay .pIcon svg {
+      width: 44px;
+      height: 44px;
+      fill: #ff4444
+    }
+
+    #portraitOverlay .pMsg {
+      font-size: 1.3rem;
+      color: #ccc;
+      text-align: center;
+      line-height: 1.7;
+      letter-spacing: 1px
+    }
+
+    @keyframes rotateHint {
+      from {
+        transform: rotate(0deg)
+      }
+
+      to {
+        transform: rotate(90deg)
+      }
+    }
+
+    @media(orientation:portrait) and (max-width:1024px) {
+      #portraitOverlay {
+        display: flex
+      }
+    }
+
+    /* ── Interact touch button ── */
+    #touchInteract {
+      position: fixed;
+      bottom: 170px;
+      right: 28px;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: rgba(255, 160, 0, .88);
+      border: 3px solid #ffaa00;
+      color: #000;
+      font-size: .75rem;
+      font-weight: 900;
+      z-index: 26;
+      display: none;
+      pointer-events: auto;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 22px rgba(255, 160, 0, .6), 0 0 44px rgba(255, 160, 0, .2);
+      transition: transform .08s, box-shadow .08s;
+      flex-direction: column;
+      gap: 2px;
+      text-align: center;
+      line-height: 1.1;
+      padding: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    #touchInteract:active {
+      transform: scale(.88);
+      box-shadow: 0 0 10px rgba(255, 160, 0, .4)
+    }
+
+    #touchInteract.pulse {
+      animation: interactPulse .8s ease-in-out infinite alternate
+    }
+
+    @keyframes interactPulse {
+      from {
+        box-shadow: 0 0 22px rgba(255, 160, 0, .6)
+      }
+
+      to {
+        box-shadow: 0 0 40px rgba(255, 160, 0, 1), 0 0 70px rgba(255, 160, 0, .4)
+      }
+    }
+
+    /* ── Sprint touch button ── */
+    #touchSprint {
+      position: fixed;
+      bottom: 170px;
+      left: 175px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(255, 80, 80, .75);
+      border: 2px solid #ff4444;
+      color: #fff;
+      font-size: .58rem;
+      font-weight: 900;
+      z-index: 26;
+      display: none;
+      pointer-events: auto;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      transition: background .15s, box-shadow .15s
+    }
+
+    #touchSprint.active {
+      background: rgba(255, 80, 80, .97);
+      box-shadow: 0 0 14px rgba(255, 80, 80, .7);
+      border-color: #ff8888
+    }
+
+    /* ── Fullscreen prompt ── */
+    #fsPrompt {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .72);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center
+    }
+
+    #fsBox {
+      background: rgba(10, 10, 18, .88);
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 10px;
+      padding: 2rem 2.4rem;
+      text-align: center;
+      max-width: 320px;
+      backdrop-filter: blur(8px)
+    }
+
+    #fsBox p {
+      font-size: 1.05rem;
+      color: #ccc;
+      margin-bottom: .4rem;
+      letter-spacing: .5px
+    }
+
+    #fsBox .fsSmall {
+      font-size: .75rem;
+      color: #666;
+      margin-bottom: 1.4rem
+    }
+
+    #fsBox .fsBtns {
+      display: flex;
+      gap: .8rem;
+      justify-content: center
+    }
+
+    #fsBox .fsBtns button {
+      flex: 1;
+      padding: .55rem 0;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      font-family: inherit;
+      font-size: .85rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    #fsBtnYes {
+      background: rgba(180, 0, 0, .7);
+      color: #fff
+    }
+
+    #fsBtnYes:hover {
+      background: rgba(220, 0, 0, .9)
+    }
+
+    #fsBtnNo {
+      background: rgba(40, 40, 50, .7);
+      color: #aaa
+    }
+
+    #fsBtnNo:hover {
+      background: rgba(60, 60, 70, .9);
+      color: #fff
+    }
+
+    /* ── Tutorial hint ── */
+    #tutorialHint {
+      position: fixed;
+      top: 82px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(.65rem, 1.5vw, .82rem);
+      color: rgba(200, 200, 200, .78);
+      background: rgba(0, 0, 0, .42);
+      padding: .35rem 1rem;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: .3px;
+      opacity: 0;
+      transition: opacity .6s;
+      z-index: 21
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- START SCREEN -->
+  <div class="screen" id="startScreen">
+    <h1>PEEREIRA NEXTBOT</h1>
+    <div class="sub">SURVIVAL HORROR</div>
+    <div class="lore">
+      Pablo Pereira Ramos — streamer gallego, Team Heretics.<br>Conocido por sus rabia épicas al perder a
+      Fortnite.<br><br>Escapa de los nextbots durante 3 minutos. No te atrapen.
+    </div>
+    <button class="btn" id="btnStart">JUGAR</button>
+    <div style="position:relative; display:inline-block">
+      <button class="btn" id="btnAchievements"
+        style="font-size:clamp(.8rem,2vw,1rem); padding:.5rem 1.5rem; margin-top:1rem">LOGROS</button>
+      <div id="achievementDot"
+        style="position:absolute; top:12px; right:-2px; width:10px; height:10px; background:#ff0000; border-radius:50%; display:none; box-shadow:0 0 8px #f00">
+      </div>
+    </div>
+    <div class="controls">
+      PC: WASD · Ratón para mirar · Shift para correr<br>
+      Móvil: Joystick izquierdo · Arrastra la derecha para girar<br>
+      Sobrevive <strong>3 minutos</strong>
+    </div>
+    <div id="recordsBlock"
+      style="font-size:.7rem;color:#484848;margin-top:.8rem;line-height:1.9;border-top:1px solid #1a0000;padding-top:.6rem;letter-spacing:.3px">
+    </div>
+    <div id="extraBtns" style="margin-top:.4rem"></div>
+  </div>
+
+  <!-- CLICK TO LOCK POINTER -->
+  <div id="blocker" style="display:none">
+    <div class="big">Clic para continuar</div>
+    <div class="msg">Ratón para mirar &nbsp;·&nbsp; WASD para moverse</div>
+  </div>
+
+  <!-- DEATH SCREEN -->
+  <div class="screen" id="deathScreen">
+    <h1>HAS MUERTO</h1>
+    <img class="face" id="deathFace" src="" alt="">
+    <div style="color:#ff4444;font-size:1.2rem;margin:.5rem">Peereira te ha alcanzado.</div>
+    <div id="deathTime" style="color:#888;font-size:1rem;margin:.5rem"></div>
+    <div id="deathRecords" style="color:#555;font-size:.75rem;margin:.2rem 0 .6rem;line-height:1.8"></div>
+    <button class="btn" id="btnRestart">INTENTAR DE NUEVO</button>
+  </div>
+
+  <!-- WIN SCREEN -->
+  <div class="screen" id="winScreen">
+    <h1>HAS ESCAPADO</h1>
+    <img class="face" id="winFace" src="" alt="">
+    <div style="color:#00ff44;font-size:1.2rem;margin:.5rem">Ningún Peereira pudo contigo.</div>
+    <div id="winTime" style="color:#44ff88;font-size:1rem;margin:.5rem"></div>
+    <div id="winRecords" style="color:#446644;font-size:.75rem;margin:.2rem 0 .6rem;line-height:1.8"></div>
+    <button class="btn" id="btnRestartWin"
+      style="background:linear-gradient(135deg,#006600,#009900);border-color:#44ff44">JUGAR DE NUEVO</button>
+  </div>
+
+  <!-- GAME UI -->
+  <div id="ui">
+    <div id="timer">03:00</div>
+    <div id="enemyCount">CASTORES: 0</div>
+    <div id="genHUD" style="position:fixed;top:50px;left:15px;font-size:.8rem;color:#ffaa00;text-shadow:0 0 8px #fa0">
+      GENERADORES: 0 / 3</div>
+    <div id="warning">SE ACERCA</div>
+    <div id="interactHint"
+      style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);font-size:.85rem;color:#ffaa00;background:rgba(0,0,0,.6);padding:.4rem 1rem;border-radius:4px;border:1px solid #664400;opacity:0;transition:opacity .3s;pointer-events:none">
+      [E] Activar generador</div>
+    <div id="exitHint"
+      style="position:fixed;bottom:110px;left:50%;transform:translateX(-50%);font-size:.9rem;color:#00ffcc;background:rgba(0,0,0,.7);padding:.4rem 1.2rem;border-radius:4px;border:1px solid #006655;opacity:0;transition:opacity .3s;pointer-events:none;font-weight:900;letter-spacing:2px">
+      SALIDA ABIERTA</div>
+    <!-- Frases Peereira -->
+    <div id="peereiraquote"
+      style="position:fixed;bottom:50px;left:50%;transform:translateX(-50%);font-size:clamp(.7rem,1.6vw,.95rem);color:rgba(180,180,180,0.72);background:rgba(0,0,0,.35);padding:.35rem 1.1rem;border-radius:4px;pointer-events:none;max-width:80vw;text-align:center;letter-spacing:.5px;opacity:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:italic">
+    </div>
+  </div>
+  <!-- SETTINGS BUTTON -->
+  <button id="settingsBtn">⚙</button>
+  <!-- SETTINGS OVERLAY + PANEL -->
+  <div id="settingsOverlay"></div>
+  <div id="settingsPanel">
+    <h2>⚙ Configuración</h2>
+    <div class="srow">
+      <label>Música <span id="musicVal">10%</span></label>
+      <input type="range" id="musicSlider" min="0" max="100" value="10">
+    </div>
+    <div class="srow">
+      <label>Efectos <span id="volVal">80%</span></label>
+      <input type="range" id="volSlider" min="0" max="100" value="80">
+    </div>
+    <div class="srow">
+      <label>Sensibilidad <span id="sensVal">5</span></label>
+      <input type="range" id="sensSlider" min="1" max="10" value="5" step="0.5">
+    </div>
+    <div class="srow-toggle">
+      <span class="slbl">Controles táctiles</span>
+      <button id="touchToggle" class="on">ON</button>
+    </div>
+    <div class="srow-toggle">
+      <span class="slbl">Minimapa</span>
+      <button id="minimapToggle" class="on" style="background:#001a00;border:1px solid #005500;color:#44aa66;font-family:inherit;font-size:.72rem;padding:.28rem .7rem;cursor:pointer;border-radius:3px;letter-spacing:1px;transition:all .2s">ON</button>
+    </div>
+    <button id="settingsClose">CERRAR</button>
+  </div>
+
+  <!-- M18: ACHIEVEMENTS PANEL -->
+  <div id="achievementsPanel"
+    style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#090910;border:2px solid #222244;padding:1.5rem 1.5rem;width:min(92vw,400px);z-index:65;display:none;flex-direction:column;gap:1rem;border-radius:8px;box-shadow:0 0 40px rgba(0,0,0,.9);max-height:80vh">
+    <h2
+      style="color:#ffaa00;font-size:1rem;letter-spacing:2px;text-align:center;text-transform:uppercase;margin-bottom:.2rem">
+      Logros</h2>
+    <div id="achievementsList" style="display:flex;flex-direction:column;gap:.5rem;overflow-y:auto;padding-right:.5rem">
+    </div>
+    <button id="achievementsClose"
+      style="background:linear-gradient(135deg,#6b0000,#aa0000);border:1px solid #dd3333;color:#fff;font-family:inherit;font-size:.85rem;padding:.5rem;cursor:pointer;letter-spacing:2px;border-radius:3px;margin-top:.3rem;transition:all .2s">CERRAR</button>
+  </div>
+
+  <div id="crosshair"></div>
+  <div id="redOverlay"></div>
+  <div id="scanlines"></div>
+  <div id="stamina">
+    <div id="staminaBar"></div>
+  </div>
+  <!-- M5: dash cooldown HUD -->
+  <div id="dashCooldownHUD" style="position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-size:.65rem;color:#9999ff;font-family:inherit;pointer-events:none;display:none"></div>
+
+  <!-- MOBILE -->
+  <div id="joystickZone">
+    <div id="joystickBase">
+      <div id="joystickKnob"></div>
+    </div>
+  </div>
+  <div id="lookZone"></div>
+
+  <!-- PORTRAIT WARNING -->
+  <div id="portraitOverlay">
+    <div class="pIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z" />
+      </svg></div>
+    <div class="pMsg">Gira el dispositivo<br>para jugar en horizontal</div>
+  </div>
+
+  <!-- FULLSCREEN PROMPT -->
+  <div id="fsPrompt">
+    <div id="fsBox">
+      <p>Pantalla completa</p>
+      <div class="fsSmall">Recomendado para mejor experiencia</div>
+      <div class="fsBtns">
+        <button id="fsBtnYes">SI</button>
+        <button id="fsBtnNo">NO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TUTORIAL HINT -->
+  <div id="tutorialHint">Busca los pilares rojos por el mapa y activalos para escapar</div>
+
+  <!-- INTERACT BUTTON (mobile) -->
+  <button id="touchInteract" style="display:none">ACTIVAR<br>GEN.</button>
+  <!-- SPRINT BUTTON (mobile) -->
+  <button id="touchSprint" style="display:none">CORRER</button>
+  <!-- M5: DASH BUTTON (mobile) -->
+  <button id="touchDash" style="position:fixed;bottom:228px;left:175px;width:46px;height:46px;border-radius:50%;background:rgba(80,80,255,.75);border:2px solid #6666ff;color:#fff;font-size:.58rem;font-weight:900;z-index:26;display:none;pointer-events:auto;letter-spacing:.5px;text-transform:uppercase;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;cursor:pointer;transition:background .15s,box-shadow .15s;font-family:inherit">DASH</button>
+
+  <!-- M28: PAUSE BUTTON (mobile) -->
+  <button id="touchPause"
+    style="position:fixed;top:15px;right:60px;width:38px;height:28px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);color:#ccc;font-size:.9rem;font-weight:900;z-index:27;display:none;pointer-events:auto;cursor:pointer;border-radius:4px;font-family:inherit">II</button>
+
+  <!-- CANVAS -->
+  <canvas id="c"></canvas>
+  <!-- M14: MINIMAP -->
+  <canvas id="minimapCanvas" style="position:fixed;bottom:10px;right:10px;width:140px;height:140px;z-index:20;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.55);display:none"></canvas>
+
+  <!-- M12: JUMPSCARE -->
+  <div id="jumpscareDiv"
+    style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:55;background:rgba(0,0,0,.9)">
+    <img id="jumpscareImg" src="" alt=""
+      style="width:85vw;height:85vh;object-fit:contain;border:5px solid #ff0000;box-shadow:0 0 80px #f00">
+  </div>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // ═══════════════════════════════════════════════
+    //  PEEREIRA NEXTBOT — Three.js r128
+    // ═══════════════════════════════════════════════
+
+    const IMGS = {
+      enfadado: "Peereira_enfadado.png",
+      ganador: "Peereira_ganador.png",
+      ganando: "Peereira_ganando (1).png",
+      sorprendido: "Peereira_sorprendido.png",
+      base: "PeereiraBase.jfif"
+    };
+
+    const ENEMY_TYPES = [
+      { id: 'base', label: 'PeereiraBase', speed: 5.0, spawnAt: 0, tint: 0xffffff, special: 'none', desc: 'El castor estándar' },
+      { id: 'enfadado', label: 'Peereira Enfadado', speed: 7.5, spawnAt: 30, tint: 0xff4444, special: 'none', desc: '¡AAAAAH! Te persigue sin parar' },
+      { id: 'sorprendido', label: 'Peereira Sorprendido', speed: 3.5, spawnAt: 60, tint: 0xffee44, special: 'accel', desc: 'Lento al inicio, acelera al verte' },
+      { id: 'ganador', label: 'Peereira Ganador', speed: 5.5, spawnAt: 90, tint: 0x88aaff, special: 'teleport', desc: 'Teletransporta cada 20s' },
+      { id: 'ganando', label: 'Peereira Ganando', speed: 9.0, spawnAt: 120, tint: 0xff88ff, special: 'none', desc: 'EL CASTOR SUPREMO. MUY RÁPIDO' }
+    ];
+
+    // ───── Three.js setup ─────
+    const canvas = document.getElementById('c');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x020204);
+    scene.fog = new THREE.FogExp2(0x020204, 0.022);
+
+    const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 1.7, 0);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    // ───── Textures ─────
+    const texLoader = new THREE.TextureLoader();
+    const textures = {};
+    for (const [key, src] of Object.entries(IMGS)) {
+      textures[key] = texLoader.load(src);
+    }
+
+    // ───── Lights ─────
+    const ambientLight = new THREE.AmbientLight(0x1a1a2e, 1.4);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0x2233aa, 0.55);
+    dirLight.position.set(50, 80, 30);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    // ── Flashlight (player torch) ──
+    // Main beam: amplio, cálido, sin sombras para máximo rendimiento
+    const flashlight = new THREE.SpotLight(0xffeedd, 5.5, 48, Math.PI / 5.2, 0.68, 2);
+    flashlight.castShadow = false;
+    const flashlightTarget = new THREE.Object3D();
+    scene.add(flashlight);
+    scene.add(flashlightTarget);
+    flashlight.target = flashlightTarget;
+    // Fill: más ancho aún, muy suave — simula la dispersión lateral real de una linterna
+    const flashFill = new THREE.SpotLight(0xffeedd, 1.8, 22, Math.PI / 3.2, 0.95, 2);
+    flashFill.castShadow = false;
+    const flashFillTarget = new THREE.Object3D();
+    scene.add(flashFill);
+    scene.add(flashFillTarget);
+    flashFill.target = flashFillTarget;
+    // Vectores pre-alocados — sin garbage cada frame
+    const _flDir = new THREE.Vector3();
+    const _flOffset = new THREE.Vector3();
+    const _flEuler = new THREE.Euler();
+
+    const scenePointLights = [];
+    function addStreetLight(x, z) {
+      const group = new THREE.Group();
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(.15, .15, 8, 6),
+        new THREE.MeshStandardMaterial({ color: 0x333344 })
+      );
+      pole.position.y = 4;
+      group.add(pole);
+      const bulb = new THREE.Mesh(
+        new THREE.SphereGeometry(.4, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0xffffaa, emissive: 0xffffaa, emissiveIntensity: 1 })
+      );
+      bulb.position.y = 8.2;
+      group.add(bulb);
+      const pLight = new THREE.PointLight(0xffffaa, 1.2, 20);
+      pLight.position.y = 8;
+      group.add(pLight);
+      scenePointLights.push(pLight); // M8: track for blackout
+      group.position.set(x, 0, z);
+      scene.add(group);
+    }
+
+    // ───── Map generation ─────
+    const GROUND_SIZE = 220;
+    const HALF = GROUND_SIZE / 2;
+
+    // Ground
+    const groundGeo = new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 32, 32);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 1, metalness: 0 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Grid lines on ground
+    const gridHelper = new THREE.GridHelper(GROUND_SIZE, 44, 0x1a1a2a, 0x1a1a2a);
+    scene.add(gridHelper);
+
+    // Buildings data: [cx, cz, w, d, h]
+    const BLDGS = [
+      [30, 30, 18, 18, 28], [-40, 20, 22, 12, 35], [20, -40, 14, 20, 22], [-25, -35, 20, 16, 30],
+      [60, -20, 16, 16, 25], [-60, 30, 14, 22, 32], [50, 50, 20, 14, 20], [-50, -50, 18, 18, 28],
+      [0, 60, 24, 12, 18], [0, -60, 12, 24, 22], [70, 0, 14, 14, 30], [-70, 10, 20, 10, 25],
+      [35, -70, 16, 16, 20], [-35, 70, 18, 12, 28], [80, 60, 12, 12, 35], [-80, -60, 14, 14, 22],
+      [60, -65, 10, 20, 18], [-65, 60, 20, 10, 24], [45, 0, 10, 30, 20], [-45, 0, 30, 10, 26],
+      [10, 45, 12, 12, 16], [-10, -45, 12, 12, 18], [75, -40, 10, 10, 30], [-75, 40, 10, 10, 25],
+      [25, 75, 16, 10, 20], [-25, -75, 10, 16, 22], [90, 25, 8, 8, 40], [-90, -25, 8, 8, 35],
+    ].map(a => {
+      // Fix negative literals parsed as minus operations
+      return a;
+    });
+
+    // Redefine with explicit values
+    const BUILDINGS = [
+      [30, 30, 18, 18, 28], [40, 20, 22, 12, 35], [20, 40, 14, 20, 22], [25, 35, 20, 16, 30],
+      [60, 20, 16, 16, 25], [60, 30, 14, 22, 32], [50, 50, 20, 14, 20], [50, 50, 18, 18, 28],
+      [0, 60, 24, 12, 18], [0, 60, 12, 24, 22], [70, 0, 14, 14, 30], [70, 10, 20, 10, 25],
+      [35, 70, 16, 16, 20], [35, 70, 18, 12, 28], [80, 60, 12, 12, 35], [80, 60, 14, 14, 22],
+      [60, 65, 10, 20, 18], [65, 60, 20, 10, 24], [45, 0, 10, 30, 20], [45, 0, 30, 10, 26],
+      [10, 45, 12, 12, 16], [10, 45, 12, 12, 18], [75, 40, 10, 10, 30], [75, 40, 10, 10, 25],
+      // Negatives side
+      [-30, -30, 18, 18, 28], [-40, -20, 22, 12, 35], [-20, -40, 14, 20, 22], [-25, -35, 20, 16, 30],
+      [-60, -20, 16, 16, 25], [-60, -30, 14, 22, 32], [-50, -50, 20, 14, 20],
+      [0, -60, 24, 12, 18], [-70, 0, 14, 14, 30], [-35, -70, 16, 16, 20], [-80, -60, 12, 12, 35],
+      // Mixed
+      [40, -30, 18, 14, 24], [-30, 40, 14, 18, 28], [55, -55, 12, 12, 20], [-55, 55, 12, 12, 20],
+      [20, -70, 10, 20, 18], [-20, 70, 20, 10, 18], [85, -20, 8, 8, 38], [-85, 20, 8, 8, 38],
+      [30, -80, 10, 16, 22], [-30, 80, 16, 10, 22],
+    ].map(b => b.map(Number));
+
+    const wallBoxes = []; // AABB for collision [{minX,maxX,minZ,maxZ}]
+    const bldgMats = [
+      new THREE.MeshStandardMaterial({ color: 0x1a1a2a, roughness: .9 }),
+      new THREE.MeshStandardMaterial({ color: 0x0d1520, roughness: .9 }),
+      new THREE.MeshStandardMaterial({ color: 0x1a0d1a, roughness: .9 }),
+      new THREE.MeshStandardMaterial({ color: 0x0d1a0d, roughness: .9 }),
+    ];
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // M7: EDIFICIOS TRANSITABLES CON PISOS
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 4 edificios seleccionados por índice en BUILDINGS[]
+    // BUILDINGS[0]  = [30,30,18,18,28]   gran edificio cuadrante +x+z
+    // BUILDINGS[6]  = [50,50,20,14,20]   grande +x+z
+    // BUILDINGS[25] = [-30,-30,18,18,28] gran edificio cuadrante -x-z
+    // BUILDINGS[27] = [-20,-40,14,20,22] mediano -x-z
+    // doorFace: 'N'=cara-z_min  'S'=cara+z_max
+    const WALKABLE_INDICES = new Set([0, 6, 25, 27]);
+    const WALKABLE_FACE    = { 0: 'N', 6: 'N', 25: 'S', 27: 'S' };
+
+    const WALKABLE_BLDGS = [];     // runtime data de cada edificio transitable
+    const DOOR_W   = 3.0;          // ancho de puerta
+    const DOOR_H   = 4.0;          // alto de puerta
+    const FLOOR1_Y = 6.0;          // altura del suelo del primer piso
+    const WALL_T   = 0.6;          // grosor de pared
+
+    const interiorFloorMat = new THREE.MeshStandardMaterial({ color: 0x1c1c0e, roughness: 0.92, metalness: 0 });
+    const stairMat         = new THREE.MeshStandardMaterial({ color: 0x2a2a10, roughness: 0.95, metalness: 0 });
+
+    function buildWalkableBuilding(cx, cz, w, d, h, matIdx, doorFace) {
+      const mat  = bldgMats[matIdx % bldgMats.length];
+      const t    = WALL_T;
+      const fY   = Math.min(FLOOR1_Y, h * 0.35); // suelo piso 1
+      const stW  = 3.0;                           // ancho de escalera
+      const stD  = fY * 1.25;                     // profundidad de escalera (rampa suave)
+
+      // Helper: crea un panel (caja) relativo al centro del edificio
+      function panel(pw, ph, pd, lx, ly, lz) {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(pw, ph, pd), mat);
+        m.position.set(cx + lx, ly, cz + lz);
+        m.castShadow = true; m.receiveShadow = true;
+        scene.add(m);
+      }
+
+      // ── Paredes con apertura de puerta ──────────────────────────────────
+      const lSec = (w - DOOR_W) / 2; // ancho de cada sección lateral de la pared con puerta
+
+      if (doorFace === 'N') {
+        // Puerta en la cara NORTE (z = cz – d/2, más cercana al origen)
+        panel(lSec, h, t,  -w/2 + lSec/2,              h/2,          -d/2 + t/2); // izquierda
+        panel(lSec, h, t,   w/2 - lSec/2,              h/2,          -d/2 + t/2); // derecha
+        panel(DOOR_W, h - DOOR_H, t, 0, DOOR_H + (h - DOOR_H)/2,    -d/2 + t/2); // dintel
+        panel(w,  h, t, 0, h/2, d/2 - t/2);                                       // sur (fondo)
+        panel(t,  h, d - 2*t, -w/2 + t/2, h/2, 0);                               // oeste
+        panel(t,  h, d - 2*t,  w/2 - t/2, h/2, 0);                               // este
+
+        // Colisiones XZ para las paredes (hueco donde va la puerta)
+        wallBoxes.push({ minX: cx-w/2, maxX: cx-DOOR_W/2, minZ: cz-d/2, maxZ: cz-d/2+t });
+        wallBoxes.push({ minX: cx+DOOR_W/2, maxX: cx+w/2, minZ: cz-d/2, maxZ: cz-d/2+t });
+        wallBoxes.push({ minX: cx-w/2, maxX: cx+w/2,      minZ: cz+d/2-t, maxZ: cz+d/2 });
+        wallBoxes.push({ minX: cx-w/2, maxX: cx-w/2+t,    minZ: cz-d/2,   maxZ: cz+d/2 });
+        wallBoxes.push({ minX: cx+w/2-t, maxX: cx+w/2,    minZ: cz-d/2,   maxZ: cz+d/2 });
+      } else { // 'S'
+        // Puerta en la cara SUR (z = cz + d/2)
+        panel(lSec, h, t,  -w/2 + lSec/2,              h/2,           d/2 - t/2); // izquierda
+        panel(lSec, h, t,   w/2 - lSec/2,              h/2,           d/2 - t/2); // derecha
+        panel(DOOR_W, h - DOOR_H, t, 0, DOOR_H + (h - DOOR_H)/2,     d/2 - t/2); // dintel
+        panel(w,  h, t, 0, h/2, -d/2 + t/2);                                      // norte (fondo)
+        panel(t,  h, d - 2*t, -w/2 + t/2, h/2, 0);                               // oeste
+        panel(t,  h, d - 2*t,  w/2 - t/2, h/2, 0);                               // este
+
+        wallBoxes.push({ minX: cx-w/2, maxX: cx-DOOR_W/2, minZ: cz+d/2-t, maxZ: cz+d/2 });
+        wallBoxes.push({ minX: cx+DOOR_W/2, maxX: cx+w/2, minZ: cz+d/2-t, maxZ: cz+d/2 });
+        wallBoxes.push({ minX: cx-w/2, maxX: cx+w/2,      minZ: cz-d/2,   maxZ: cz-d/2+t });
+        wallBoxes.push({ minX: cx-w/2, maxX: cx-w/2+t,    minZ: cz-d/2,   maxZ: cz+d/2 });
+        wallBoxes.push({ minX: cx+w/2-t, maxX: cx+w/2,    minZ: cz-d/2,   maxZ: cz+d/2 });
+      }
+
+      // ── Posición de la escalera (contra pared este, cerca del fondo) ──
+      const stairMinX = cx + w/2 - t - stW - 0.1;
+      const stairMaxX = cx + w/2 - t - 0.1;
+      let stairMinZ, stairMaxZ;
+
+      if (doorFace === 'N') {
+        // Fondo = cara sur. Escalera sube hacia el sur.
+        stairMaxZ = cz + d/2 - t - 0.2;
+        stairMinZ = stairMaxZ - stD;
+      } else {
+        // Fondo = cara norte. Escalera sube hacia el norte.
+        stairMinZ = cz - d/2 + t + 0.2;
+        stairMaxZ = stairMinZ + stD;
+      }
+
+      // ── Peldaños de la escalera (4 escalones sólidos) ─────────────────
+      const numSteps = 4;
+      const stepH    = fY / numSteps;
+      const stepD    = stD / numSteps;
+
+      for (let s = 0; s < numSteps; s++) {
+        const sh = stepH * (s + 1);                       // altura acumulada del peldaño
+        let szCenter;
+        if (doorFace === 'N') {
+          // Peldaños ordenados de stairMinZ (bajo) a stairMaxZ (alto, hacia fondo sur)
+          szCenter = stairMinZ + stepD * s + stepD / 2;
+        } else {
+          // Peldaños ordenados de stairMaxZ (bajo) a stairMinZ (alto, hacia fondo norte)
+          szCenter = stairMaxZ - stepD * s - stepD / 2;
+        }
+        const sm = new THREE.Mesh(new THREE.BoxGeometry(stW, sh, stepD), stairMat);
+        sm.position.set(stairMinX + stW / 2, sh / 2, szCenter);
+        sm.receiveShadow = true;
+        scene.add(sm);
+      }
+
+      // ── Losa del piso 1 (con hueco en zona de escalera) ───────────────
+      // Parte OESTE (de pared oeste hasta inicio de escalera, ancho completo en Z interior)
+      const slabWestW = stairMinX - (cx - w/2 + t);
+      if (slabWestW > 0.15) {
+        const sm = new THREE.Mesh(
+          new THREE.BoxGeometry(slabWestW, 0.35, d - 2*t), interiorFloorMat);
+        sm.position.set(cx - w/2 + t + slabWestW / 2, fY, cz);
+        sm.receiveShadow = true; scene.add(sm);
+      }
+      // Parte en el mismo rango X de la escalera pero FUERA de su rango Z
+      const stepXSectionW = stairMaxX - stairMinX;
+      if (doorFace === 'N') {
+        // Área norte de la escalera (entre puerta norte y escalera)
+        const northD = stairMinZ - (cz - d/2 + t);
+        if (northD > 0.15) {
+          const sm = new THREE.Mesh(
+            new THREE.BoxGeometry(stepXSectionW, 0.35, northD), interiorFloorMat);
+          sm.position.set(stairMinX + stepXSectionW / 2, fY, cz - d/2 + t + northD / 2);
+          sm.receiveShadow = true; scene.add(sm);
+        }
+      } else {
+        // Área sur de la escalera (entre escalera y puerta sur)
+        const southD = (cz + d/2 - t) - stairMaxZ;
+        if (southD > 0.15) {
+          const sm = new THREE.Mesh(
+            new THREE.BoxGeometry(stepXSectionW, 0.35, southD), interiorFloorMat);
+          sm.position.set(stairMinX + stepXSectionW / 2, fY, stairMaxZ + southD / 2);
+          sm.receiveShadow = true; scene.add(sm);
+        }
+      }
+
+      // ── Luz interior tenue (PointLight) ───────────────────────────────
+      const intLight = new THREE.PointLight(0x664422, 0.55, Math.max(w, d) * 1.9);
+      intLight.position.set(cx, fY + 2.5, cz);
+      scene.add(intLight);
+      // También en la planta baja
+      const groundLight = new THREE.PointLight(0x443322, 0.3, Math.max(w, d) * 1.4);
+      groundLight.position.set(cx, 2.5, cz);
+      scene.add(groundLight);
+
+      // ── Registrar en WALKABLE_BLDGS ───────────────────────────────────
+      WALKABLE_BLDGS.push({
+        cx, cz, w, d, h, floorY: fY, doorFace,
+        stair: {
+          minX: stairMinX, maxX: stairMaxX,
+          minZ: stairMinZ, maxZ: stairMaxZ,
+          centerX: (stairMinX + stairMaxX) / 2,
+          centerZ: (stairMinZ + stairMaxZ) / 2
+        }
+      });
+    }
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    BUILDINGS.forEach(([cx, cz, w, d, h], i) => {
+      if (WALKABLE_INDICES.has(i)) {
+        // M7: Edificio transitable — geometría por paneles con puerta
+        buildWalkableBuilding(cx, cz, w, d, h, i, WALKABLE_FACE[i]);
+      } else {
+        const geo = new THREE.BoxGeometry(w, h, d);
+        const mat = bldgMats[i % bldgMats.length];
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(cx, h / 2, cz);
+        mesh.castShadow = mesh.receiveShadow = true;
+        scene.add(mesh);
+        wallBoxes.push({ minX: cx - w / 2, maxX: cx + w / 2, minZ: cz - d / 2, maxZ: cz + d / 2, h });
+      }
+    });
+
+    // Boundary walls (invisible collision)
+    [
+      { minX: -HALF - 2, maxX: -HALF, minZ: -HALF, maxZ: HALF, h: 20 },
+      { minX: HALF, maxX: HALF + 2, minZ: -HALF, maxZ: HALF, h: 20 },
+      { minX: -HALF, maxX: HALF, minZ: -HALF - 2, maxZ: -HALF, h: 20 },
+      { minX: -HALF, maxX: HALF, minZ: HALF, maxZ: HALF + 2, h: 20 },
+    ].forEach(b => wallBoxes.push(b));
+
+    // Visible boundary
+    const boundaryMat = new THREE.MeshStandardMaterial({ color: 0x0a0a12, roughness: 1 });
+    const boundaryGeo = new THREE.BoxGeometry(GROUND_SIZE, 20, 2);
+    [
+      [0, 10, HALF + 1, 0], [0, 10, -HALF - 1, 0],
+    ].forEach(([x, y, z, ry]) => {
+      const m = new THREE.Mesh(boundaryGeo, boundaryMat);
+      m.position.set(x, y, z); m.rotation.y = ry; scene.add(m);
+    });
+    const boundaryGeo2 = new THREE.BoxGeometry(2, 20, GROUND_SIZE);
+    [
+      [HALF + 1, 10, 0], [-HALF - 1, 10, 0]
+    ].forEach(([x, y, z]) => {
+      const m = new THREE.Mesh(boundaryGeo2, boundaryMat);
+      m.position.set(x, y, z); scene.add(m);
+    });
+
+    // Street lights
+    [[30, 0], [-30, 0], [0, 30], [0, -30], [55, 55], [-55, -55], [55, -55], [-55, 55], [0, 0]].forEach(([x, z]) => addStreetLight(x, z));
+
+    // ───── M15: Zonas de velocidad reducida ─────
+    const SLOW_ZONES = [{ x: 45, z: -45, r: 8 }, { x: -50, z: 20, r: 8 }, { x: 15, z: 70, r: 8 }];
+    const slowZoneMat = new THREE.MeshBasicMaterial({ color: 0x334455, transparent: true, opacity: 0.18, depthWrite: false });
+    SLOW_ZONES.forEach(sz => {
+      const disc = new THREE.Mesh(new THREE.CircleGeometry(sz.r, 32), slowZoneMat.clone());
+      disc.rotation.x = -Math.PI / 2;
+      disc.position.set(sz.x, 0.02, sz.z);
+      scene.add(disc);
+    });
+    function getSlowFactor(x, z) {
+      for (const sz of SLOW_ZONES) {
+        const dx = x - sz.x, dz = z - sz.z;
+        if (dx * dx + dz * dz <= sz.r * sz.r) return true;
+      }
+      return false;
+    }
+    function addTree(x, z) {
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(.3, .5, 4, 6),
+        new THREE.MeshStandardMaterial({ color: 0x2a1408, roughness: 1 })
+      );
+      trunk.position.set(x, 2, z); trunk.castShadow = true; scene.add(trunk);
+      const top = new THREE.Mesh(
+        new THREE.SphereGeometry(2.2, 6, 5),
+        new THREE.MeshStandardMaterial({ color: 0x071207, roughness: 1 })
+      );
+      top.position.set(x, 5.5, z); top.castShadow = true; scene.add(top);
+      wallBoxes.push({ minX: x - .7, maxX: x + .7, minZ: z - .7, maxZ: z + .7 });
+    }
+    [[15, 15], [-15, 15], [15, -15], [-15, -15],
+    [40, -10], [-40, 10], [10, 40], [-10, -40],
+    [55, 20], [-55, -20], [20, 55], [-20, -55],
+    [85, -30], [-85, 30], [30, 85], [-30, -85],
+    [70, 40], [-70, -40], [5, 90], [-5, -90]
+    ].forEach(([x, z]) => addTree(x, z));
+
+    // ───── Puzzle: 3 generators + exit ─────
+    const GEN_POSITIONS = [{ x: 75, z: -65 }, { x: -80, z: 55 }, { x: 10, z: 90 }];
+    const generatorMeshes = [], generatorLights = [];
+    let gensActivated = 0;
+    const GENS_NEEDED = 3;
+    let exitOpen = false;
+
+    const genOffMat = new THREE.MeshStandardMaterial({ color: 0x440000, emissive: 0x220000, emissiveIntensity: 1, roughness: .5 });
+    const genOnMat = new THREE.MeshStandardMaterial({ color: 0x00ff44, emissive: 0x00ff44, emissiveIntensity: 1.5, roughness: .5 });
+
+    GEN_POSITIONS.forEach(({ x, z }, i) => {
+      // Pillar body
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3, 1.2), genOffMat.clone());
+      body.position.set(x, 1.5, z); body.castShadow = true; scene.add(body);
+      // Top sphere
+      const orb = new THREE.Mesh(new THREE.SphereGeometry(.7, 10, 10), genOffMat.clone());
+      orb.position.set(x, 3.5, z); scene.add(orb);
+      // Point light
+      const pl = new THREE.PointLight(0xff2200, 2, 12);
+      pl.position.set(x, 4, z); scene.add(pl);
+      // No añadimos AABB a wallBoxes: el jugador debe poder acercarse a ≤3.5u para pulsar E
+      generatorMeshes.push({ body, orb, activated: false, x, z });
+      generatorLights.push(pl);
+    });
+
+    // Exit portal — locked behind puzzle
+    const EXIT_X = 0, EXIT_Z = -100;
+    const exitGroup = new THREE.Group();
+    const exitRing = new THREE.Mesh(
+      new THREE.TorusGeometry(3.5, .4, 8, 32),
+      new THREE.MeshStandardMaterial({ color: 0x005566, emissive: 0x003344, emissiveIntensity: 1 })
+    );
+    exitRing.rotation.y = 0; exitGroup.add(exitRing);
+    const exitFill = new THREE.Mesh(
+      new THREE.CircleGeometry(3.4, 32),
+      new THREE.MeshBasicMaterial({ color: 0x001122, transparent: true, opacity: .6, side: THREE.DoubleSide })
+    );
+    exitFill.rotation.x = -Math.PI / 2; exitGroup.add(exitFill);
+    exitGroup.position.set(EXIT_X, 3.5, EXIT_Z);
+    scene.add(exitGroup);
+    const exitLight = new THREE.PointLight(0x0088aa, 0, 15);
+    exitLight.position.set(EXIT_X, 3.5, EXIT_Z);
+    scene.add(exitLight);
+    // Exit sign post
+    const signPost = new THREE.Mesh(
+      new THREE.CylinderGeometry(.1, .1, 3.5, 6),
+      new THREE.MeshStandardMaterial({ color: 0x222233 })
+    );
+    signPost.position.set(EXIT_X, 1.75, EXIT_Z); scene.add(signPost);
+
+    // ───── Player state ─────
+    const player = {
+      yaw: 0, pitch: 0,
+      velX: 0, velZ: 0,
+      stamina: 1.0,
+      alive: true,
+      speed: 6.0,
+      RADIUS: 0.6
+    };
+
+    // M7: Player vertical physics
+    const PLAYER_EYE    = 1.7;   // altura de los ojos sobre el suelo
+    const GRAVITY_ACCEL = -24;   // m/s² hacia abajo
+    let playerVelY        = 0;
+    let playerOnGround    = true;
+    let playerFallFromY   = 0;   // altura inicial de la caída
+    let landingPauseTimer = 0;   // 0.3 s de pausa al aterrizar
+    let playerOnUpperFloor  = false; // ¿está en el piso 1 de un edificio?
+    let playerBuildingIdx   = -1;   // índice en WALKABLE_BLDGS (−1 = fuera)
+
+    // M7: Devuelve el Y del suelo más cercano bajo el jugador
+    function getFloorYAt(x, z, camY) {
+      const feetY = camY - PLAYER_EYE;
+      for (let i = 0; i < WALKABLE_BLDGS.length; i++) {
+        const wb = WALKABLE_BLDGS[i];
+        const m = 0.22; // margen interior
+        if (x < wb.cx - wb.w/2 + m || x > wb.cx + wb.w/2 - m) continue;
+        if (z < wb.cz - wb.d/2 + m || z > wb.cz + wb.d/2 - m) continue;
+        // ¿Está en la zona XZ de la escalera?
+        const inStX = x > wb.stair.minX && x < wb.stair.maxX;
+        const inStZ = z > wb.stair.minZ && z < wb.stair.maxZ;
+        if (inStX && inStZ) {
+          // Ramp lineal: mayor profundidad = mayor altura
+          let t;
+          if (wb.doorFace === 'N') {
+            // Puerta al norte; escalera sube hacia el sur (mayor z)
+            t = (z - wb.stair.minZ) / (wb.stair.maxZ - wb.stair.minZ);
+          } else {
+            // Puerta al sur; escalera sube hacia el norte (menor z)
+            t = 1 - (z - wb.stair.minZ) / (wb.stair.maxZ - wb.stair.minZ);
+          }
+          return Math.max(0, Math.min(1, t)) * wb.floorY;
+        }
+        // Fuera de la zona de escalera → 0 (planta baja) o floorY (piso 1)
+        return feetY >= wb.floorY - 0.45 ? wb.floorY : 0;
+      }
+      return 0; // suelo exterior
+    }
+
+    // M7: Floor height para enemigos (sin currentY; siempre busca suelo bajo el enemigo)
+    function getEnemyFloorAt(x, z) {
+      for (let i = 0; i < WALKABLE_BLDGS.length; i++) {
+        const wb = WALKABLE_BLDGS[i];
+        if (x < wb.cx - wb.w/2 + 0.3 || x > wb.cx + wb.w/2 - 0.3) continue;
+        if (z < wb.cz - wb.d/2 + 0.3 || z > wb.cz + wb.d/2 - 0.3) continue;
+        const inStX = x > wb.stair.minX && x < wb.stair.maxX;
+        const inStZ = z > wb.stair.minZ && z < wb.stair.maxZ;
+        if (inStX && inStZ) {
+          let t;
+          if (wb.doorFace === 'N') {
+            t = (z - wb.stair.minZ) / (wb.stair.maxZ - wb.stair.minZ);
+          } else {
+            t = 1 - (z - wb.stair.minZ) / (wb.stair.maxZ - wb.stair.minZ);
+          }
+          return Math.max(0, Math.min(1, t)) * wb.floorY;
+        }
+        return 0; // enemigos en planta baja por defecto
+      }
+      return 0;
+    }
+
+    // M7: Aplica gravedad y detecta colisión con el suelo
+    function updatePlayerY(dt) {
+      if (landingPauseTimer > 0) {
+        landingPauseTimer = Math.max(0, landingPauseTimer - dt);
+        return; // el jugador está paralizado brevemente al aterrizar
+      }
+
+      const floorY    = getFloorYAt(camera.position.x, camera.position.z, camera.position.y);
+      const targetCamY = floorY + PLAYER_EYE;
+
+      if (camera.position.y <= targetCamY + 0.04 && playerVelY <= 0) {
+        // Toca suelo
+        if (!playerOnGround) {
+          // Acababa de estar en el aire — detectar caída fuerte
+          const fallDist = playerFallFromY - targetCamY;
+          if (fallDist > 2.6) landingPauseTimer = 0.3;
+        }
+        playerOnGround   = true;
+        playerVelY       = 0;
+        camera.position.y = targetCamY;
+      } else {
+        if (playerOnGround) playerFallFromY = camera.position.y;
+        playerOnGround  = false;
+        playerVelY     += GRAVITY_ACCEL * dt;
+        camera.position.y += playerVelY * dt;
+        // Límite absoluto: suelo del mundo
+        if (camera.position.y < PLAYER_EYE) {
+          if (!playerOnGround) {
+            const fallDist = playerFallFromY - PLAYER_EYE;
+            if (fallDist > 2.6) landingPauseTimer = 0.3;
+          }
+          camera.position.y = PLAYER_EYE;
+          playerVelY        = 0;
+          playerOnGround    = true;
+        }
+      }
+
+      // Actualizar qué edificio transitable ocupa el jugador
+      playerBuildingIdx  = -1;
+      playerOnUpperFloor = false;
+      for (let i = 0; i < WALKABLE_BLDGS.length; i++) {
+        const wb = WALKABLE_BLDGS[i];
+        if (camera.position.x > wb.cx - wb.w/2 + 0.25 && camera.position.x < wb.cx + wb.w/2 - 0.25 &&
+            camera.position.z > wb.cz - wb.d/2 + 0.25 && camera.position.z < wb.cz + wb.d/2 - 0.25) {
+          playerBuildingIdx  = i;
+          playerOnUpperFloor = (camera.position.y - PLAYER_EYE) >= wb.floorY - 0.3;
+          break;
+        }
+      }
+    }
+
+    // ───── Input ─────
+    const keys = {};
+    let pointerLocked = false;
+    let mouseDX = 0, mouseDY = 0;
+    let mouseSens = 0.0018;
+    let masterVolume = 0.8;
+
+    document.addEventListener('keydown', e => {
+      keys[e.code] = true;
+      // Shift toggle sprint en PC
+      if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && gameState === 'playing') {
+        touchSprinting = !touchSprinting;
+      }
+    });
+    document.addEventListener('keyup', e => {
+      keys[e.code] = false;
+    });
+
+    // ── M5: Dash state ──
+    let dashActive = false, dashTimer = 0, dashCooldown = 0;
+    let dashDirX = 0, dashDirZ = 0;
+    const DASH_DURATION = 0.4, DASH_COOLDOWN = 8, DASH_SPEED_MULT = 2.5;
+    const lastKeyDown = {};
+    const DOUBLE_TAP_MS = 280;
+    const DASH_KEYS = ['KeyW', 'KeyS', 'KeyA', 'KeyD'];
+    const dashHUDEl = document.getElementById('dashCooldownHUD');
+    const TOUCH_DASH = document.getElementById('touchDash');
+
+    document.addEventListener('keydown', e => {
+      if (DASH_KEYS.includes(e.code) && gameState === 'playing' && dashCooldown <= 0 && !dashActive) {
+        const now = Date.now();
+        if (lastKeyDown[e.code] && now - lastKeyDown[e.code] < DOUBLE_TAP_MS) {
+          triggerDash();
+          lastKeyDown[e.code] = 0;
+        } else {
+          lastKeyDown[e.code] = now;
+        }
+      }
+    });
+    function triggerDash() {
+      if (dashCooldown > 0 || dashActive) return;
+      const fwdX = Math.sin(player.yaw), fwdZ = Math.cos(player.yaw);
+      const rightX = Math.cos(player.yaw), rightZ = -Math.sin(player.yaw);
+      let dx = 0, dz = 0;
+      if (keys['KeyW'] || keys['ArrowUp']) { dx -= fwdX; dz -= fwdZ; }
+      if (keys['KeyS'] || keys['ArrowDown']) { dx += fwdX; dz += fwdZ; }
+      if (keys['KeyA'] || keys['ArrowLeft']) { dx -= rightX; dz -= rightZ; }
+      if (keys['KeyD'] || keys['ArrowRight']) { dx += rightX; dz += rightZ; }
+      if (isMobile && joystickActive) { dx += fwdX * joystickDY + rightX * joystickDX; dz += fwdZ * joystickDY + rightZ * joystickDX; }
+      const mag = Math.sqrt(dx * dx + dz * dz);
+      if (mag < 0.01) { dx = -fwdX; dz = -fwdZ; } else { dx /= mag; dz /= mag; }
+      dashDirX = dx; dashDirZ = dz;
+      dashActive = true;
+      dashTimer = DASH_DURATION;
+      dashCooldown = DASH_COOLDOWN;
+    }
+    document.addEventListener('mousemove', e => {
+      if (!pointerLocked) return;
+      mouseDX += e.movementX;
+      mouseDY += e.movementY;
+    });
+
+    // Pointer lock
+    const blocker = document.getElementById('blocker');
+    blocker.addEventListener('click', () => {
+      if (gameState === 'playing' && !isMobile) canvas.requestPointerLock();
+    });
+    canvas.addEventListener('click', () => {
+      if (gameState === 'playing' && !isMobile) canvas.requestPointerLock();
+    });
+    document.addEventListener('pointerlockchange', () => {
+      pointerLocked = document.pointerLockElement === canvas;
+      if (!isMobile) {
+        blocker.style.display = (gameState === 'playing' && !pointerLocked) ? 'flex' : 'none';
+      } else {
+        blocker.style.display = 'none';
+      }
+    });
+    // Auto-resume audio on mobile when page regains focus
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && isMobile && gameState === 'playing') {
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => { });
+      }
+    });
+
+    // ───── Collision helpers ─────
+    function collidesWithWalls(x, z, r) {
+      for (const b of wallBoxes) {
+        if (x + r > b.minX && x - r < b.maxX && z + r > b.minZ && z - r < b.maxZ) return true;
+      }
+      return false;
+    }
+
+    // M7: collidesWithWallsXZ ignora el interior de edificios transitables
+    // (la geometría de paneles ya maneja las colisiones reales con las paredes)
+    function collidesXZForPlayer(x, z, r) {
+      return collidesWithWalls(x, z, r);
+    }
+
+    function slideMove(px, pz, dx, dz, r) {
+      let nx = px + dx, nz = pz + dz;
+      if (!collidesWithWalls(nx, nz, r)) return { x: nx, z: nz };
+      if (!collidesWithWalls(nx, pz, r)) return { x: nx, z: pz };
+      if (!collidesWithWalls(px, nz, r)) return { x: px, z: nz };
+      return { x: px, z: pz };
+    }
+
+    // ───── Enemy system ─────
+    const enemies = [];
+    const ENEMY_SIZE = 5.5; // sprite world units — más grande y amenazante
+    const ENEMY_KILL_DIST = 2.2;
+    const ENEMY_SPAWN_DIST = 85;
+
+    function spawnEnemy(typeId) {
+      const type = ENEMY_TYPES.find(t => t.id === typeId);
+      if (!type) return;
+      // Pick spawn position at edge of map, away from player
+      let sx, sz;
+      let attempts = 0;
+      do {
+        const angle = Math.random() * Math.PI * 2;
+        const r = ENEMY_SPAWN_DIST + Math.random() * 15;
+        sx = Math.cos(angle) * r;
+        sz = Math.sin(angle) * r;
+        sx = Math.max(-HALF + 5, Math.min(HALF - 5, sx));
+        sz = Math.max(-HALF + 5, Math.min(HALF - 5, sz));
+        attempts++;
+      } while (collidesWithWalls(sx, sz, 2) && attempts < 20);
+
+      const spriteMat = new THREE.SpriteMaterial({
+        map: textures[typeId],
+        color: nightmareMode ? (() => {
+          // M25: mezclar tinte con 0x334433 factor 0.18
+          const base = new THREE.Color(type.tint);
+          const mix = new THREE.Color(0x334433);
+          base.lerp(mix, 0.18);
+          return base;
+        })() : type.tint,
+        transparent: true,
+        depthWrite: false
+      });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(ENEMY_SIZE, ENEMY_SIZE * 1.2, 1);
+      sprite.position.set(sx, ENEMY_SIZE * 0.6, sz);
+      scene.add(sprite);
+
+      // Glow ring under enemy
+      const ringGeo = new THREE.RingGeometry(.5, 1.5, 16);
+      const ringMat = new THREE.MeshBasicMaterial({ color: type.tint, side: THREE.DoubleSide, transparent: true, opacity: .4 });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(sx, 0.05, sz);
+      scene.add(ring);
+
+      enemies.push({
+        type, sprite, ring,
+        speed: type.speed,
+        accel: 0,
+        teleportTimer: 20,
+        wanderTimer: 0,
+        wanderAngle: 0,
+        chasing: false,
+        currentTex: typeId,
+        alive: true,
+        path: null,
+        pathTimer: 0,
+        pathWptIdx: 0,
+        lastKnownX: 0,
+        lastKnownZ: 0,
+        searchTimer: 0
+      });
+    }
+
+    // ───── M21: Estela visual de nextbots (pool de sprites) ─────
+    const TRAIL_PER_ENEMY = 6;
+    const TRAIL_POOL_SIZE = TRAIL_PER_ENEMY * 8; // 8 enemigos máx
+    const trailPool = [];
+    for (let i = 0; i < TRAIL_POOL_SIZE; i++) {
+      const sm = new THREE.SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0 });
+      const sp = new THREE.Sprite(sm);
+      sp.scale.set(ENEMY_SIZE * 0.3, ENEMY_SIZE * 0.3 * 1.2, 1);
+      sp.visible = false;
+      scene.add(sp);
+      trailPool.push({ sprite: sp, used: false });
+    }
+    // Per-enemy trail state added in spawnEnemy via trailPositions / trailTimer
+
+    function updateTrails(dt) {
+      enemies.forEach(e => {
+        if (!e.alive) return;
+        if (!e.trailPositions) {
+          e.trailPositions = [];
+          e.trailTimer = 0;
+          e.trailSprites = [];
+        }
+        e.trailTimer -= dt;
+        if (e.chasing && e.trailTimer <= 0) {
+          e.trailTimer = 0.1;
+          e.trailPositions.unshift({ x: e.sprite.position.x, y: e.sprite.position.y, z: e.sprite.position.z });
+          if (e.trailPositions.length > TRAIL_PER_ENEMY) e.trailPositions.pop();
+        }
+        // Release old sprites
+        e.trailSprites.forEach(ts => { ts.used = false; ts.sprite.visible = false; });
+        e.trailSprites = [];
+        if (!e.chasing) return;
+        // Assign pool sprites
+        e.trailPositions.forEach((pos, idx) => {
+          const slot = trailPool.find(t => !t.used);
+          if (!slot) return;
+          slot.used = true;
+          slot.sprite.visible = true;
+          slot.sprite.material.map = textures[e.currentTex] || textures[e.type.id];
+          slot.sprite.material.opacity = 0.35 * (1 - idx / TRAIL_PER_ENEMY);
+          slot.sprite.material.needsUpdate = true;
+          slot.sprite.position.set(pos.x, pos.y, pos.z);
+          e.trailSprites.push(slot);
+        });
+      });
+    }
+    const GRID_CELL = 2.5;
+    const GRID_COLS = Math.ceil(GROUND_SIZE / GRID_CELL); // 88
+    const GRID_ROWS = Math.ceil(GROUND_SIZE / GRID_CELL); // 88
+    const pathGrid = new Uint8Array(GRID_COLS * GRID_ROWS);
+
+    // Build grid now that const declarations are initialized and all wallBoxes exist
+    buildPathGrid();
+
+    function buildPathGrid() {
+      const margin = 1.2; // enemy half-width + buffer
+      for (let r = 0; r < GRID_ROWS; r++) {
+        for (let c = 0; c < GRID_COLS; c++) {
+          const wx = -HALF + (c + 0.5) * GRID_CELL;
+          const wz = -HALF + (r + 0.5) * GRID_CELL;
+          let blocked = false;
+          for (const b of wallBoxes) {
+            if (wx + margin > b.minX && wx - margin < b.maxX &&
+              wz + margin > b.minZ && wz - margin < b.maxZ) { blocked = true; break; }
+          }
+          pathGrid[r * GRID_COLS + c] = blocked ? 1 : 0;
+        }
+      }
+    }
+
+    function worldToCell(wx, wz) {
+      return {
+        c: Math.max(0, Math.min(GRID_COLS - 1, Math.floor((wx + HALF) / GRID_CELL))),
+        r: Math.max(0, Math.min(GRID_ROWS - 1, Math.floor((wz + HALF) / GRID_CELL)))
+      };
+    }
+    function cellToWorld(c, r) {
+      return { x: -HALF + (c + 0.5) * GRID_CELL, z: -HALF + (r + 0.5) * GRID_CELL };
+    }
+
+    function astar(sx, sz, gx, gz) {
+      const s = worldToCell(sx, sz), g = worldToCell(gx, gz);
+      const si = s.r * GRID_COLS + s.c, gi = g.r * GRID_COLS + g.c;
+      if (si === gi) return [];
+      if (pathGrid[si] || pathGrid[gi]) return null;
+
+      const INF = 1e9;
+      const gS = new Float32Array(GRID_COLS * GRID_ROWS).fill(INF);
+      const fS = new Float32Array(GRID_COLS * GRID_ROWS).fill(INF);
+      const from = new Int32Array(GRID_COLS * GRID_ROWS).fill(-1);
+      gS[si] = 0; fS[si] = Math.abs(g.c - s.c) + Math.abs(g.r - s.r);
+
+      // Binary min-heap: entries [fScore, nodeIdx]
+      const heap = [[fS[si], si]];
+      const closed = new Uint8Array(GRID_COLS * GRID_ROWS);
+
+      function hPush(f, n) {
+        heap.push([f, n]);
+        let i = heap.length - 1;
+        while (i > 0) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break;[heap[p], heap[i]] = [heap[i], heap[p]]; i = p; }
+      }
+      function hPop() {
+        const top = heap[0]; const last = heap.pop();
+        if (heap.length) {
+          heap[0] = last; let i = 0;
+          while (true) {
+            let m = i, l = 2 * i + 1, r = 2 * i + 2;
+            if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
+            if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
+            if (m === i) break;[heap[m], heap[i]] = [heap[i], heap[m]]; i = m;
+          }
+        }
+        return top;
+      }
+
+      const DIRS = [[0, 1, 1], [0, -1, 1], [1, 0, 1], [-1, 0, 1],
+      [1, 1, 1.414], [1, -1, 1.414], [-1, 1, 1.414], [-1, -1, 1.414]];
+      let iter = 0;
+
+      while (heap.length && iter++ < 3000) {
+        const [, cur] = hPop();
+        if (closed[cur]) continue;
+        closed[cur] = 1;
+
+        if (cur === gi) {
+          // Reconstruct raw path
+          const path = [];
+          let node = cur;
+          while (node !== -1) {
+            const c = node % GRID_COLS, r = Math.floor(node / GRID_COLS);
+            path.push(cellToWorld(c, r));
+            node = from[node];
+          }
+          path.reverse();
+          // Smooth: merge consecutive waypoints visible to each other
+          if (path.length < 2) return path;
+          const smooth = [path[0]];
+          let i = 0;
+          while (i < path.length - 1) {
+            let j = Math.min(path.length - 1, i + 8);
+            const last = smooth[smooth.length - 1];
+            while (j > i + 1 && !hasLOS(last.x, last.z, path[j].x, path[j].z)) j--;
+            smooth.push(path[j]); i = j;
+          }
+          return smooth;
+        }
+
+        const cr = Math.floor(cur / GRID_COLS), cc = cur % GRID_COLS;
+        for (const [dc, dr, cost] of DIRS) {
+          const nc = cc + dc, nr = cr + dr;
+          if (nc < 0 || nc >= GRID_COLS || nr < 0 || nr >= GRID_ROWS) continue;
+          const ni = nr * GRID_COLS + nc;
+          if (pathGrid[ni] || closed[ni]) continue;
+          // No diagonal corner-cutting through walls
+          if (dc && dr && (pathGrid[cr * GRID_COLS + nc] || pathGrid[nr * GRID_COLS + cc])) continue;
+          const tg = gS[cur] + cost;
+          if (tg < gS[ni]) {
+            from[ni] = cur; gS[ni] = tg;
+            fS[ni] = tg + (Math.abs(g.c - nc) + Math.abs(g.r - nr));
+            hPush(fS[ni], ni);
+          }
+        }
+      }
+      return null; // no path found
+    }
+
+    // ───── LOS helper ─────
+    function hasLOS(ax, az, bx, bz) {
+      const STEPS = 24;
+      for (let i = 1; i < STEPS; i++) {
+        const t = i / STEPS;
+        const x = ax + (bx - ax) * t, z = az + (bz - az) * t;
+        for (const b of wallBoxes) {
+          if (x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ) return false;
+        }
+      }
+      return true;
+    }
+
+    function updateEnemies(dt) {
+      const px = camera.position.x, pz = camera.position.z;
+      enemies.forEach(e => {
+        if (!e.alive) return;
+        const ex = e.sprite.position.x, ez = e.sprite.position.z;
+        const dx = px - ex, dz = pz - ez;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        // ── Determine chase state
+        const canSee = dist < 60 && hasLOS(ex, ez, px, pz);
+        const isClose = dist < 8;
+        if (canSee || isClose) {
+          e.chasing = true;
+          e.lastKnownX = px; e.lastKnownZ = pz;
+          e.searchTimer = 8;
+        } else if (e.chasing) {
+          // Search mode: move to last known position
+          e.searchTimer = (e.searchTimer || 0) - dt;
+          if (e.searchTimer <= 0) { e.chasing = false; e.path = null; e.pathWptIdx = 0; }
+        }
+
+        // ── Special behaviors
+        if (e.type.special === 'accel') {
+          if (dist < 50 && e.chasing) e.accel = Math.min(e.accel + dt * 3, 6);
+          else e.accel = Math.max(e.accel - dt, 0);
+        }
+        if (e.type.special === 'teleport') {
+          e.teleportTimer -= dt;
+          if (e.teleportTimer <= 0) {
+            e.teleportTimer = 18 + Math.random() * 5;
+            const ang = Math.atan2(dz, dx) + (Math.random() - .5) * .8;
+            const td = 8 + Math.random() * 12;
+            const tx = px - Math.cos(ang) * td, tz = pz - Math.sin(ang) * td;
+            if (!collidesWithWalls(tx, tz, 2)) {
+              e.sprite.position.set(tx, ENEMY_SIZE * .6, tz);
+              e.ring.position.set(tx, .05, tz);
+              e.sprite.material.color.setHex(0xffffff);
+              setTimeout(() => { if (e.sprite) e.sprite.material.color.setHex(e.type.tint); }, 200);
+            }
+            return;
+          }
+        }
+
+        // ── Movement target via A*
+        let targetX, targetZ;
+        if (e.chasing) {
+          e.pathTimer -= dt;
+          if (e.pathTimer <= 0 || !e.path) {
+            e.pathTimer = 1.2 + Math.random() * 0.4;
+            if (canSee) {
+              // LOS disponible: ir directo, sin pathfinding
+              e.path = null;
+              e.pathWptIdx = 0;
+            } else {
+              const p = astar(ex, ez, e.lastKnownX, e.lastKnownZ);
+              e.path = p;
+              e.pathWptIdx = 1; // índice 0 es la celda actual
+            }
+          }
+          // Seguir waypoints A*
+          if (!canSee && e.path && e.pathWptIdx < e.path.length) {
+            const wpt = e.path[e.pathWptIdx];
+            const wdx = wpt.x - ex, wdz = wpt.z - ez;
+            if (wdx * wdx + wdz * wdz < (GRID_CELL * 0.7) * (GRID_CELL * 0.7)) e.pathWptIdx++;
+            if (e.pathWptIdx < e.path.length) {
+              targetX = e.path[e.pathWptIdx].x;
+              targetZ = e.path[e.pathWptIdx].z;
+            } else {
+              targetX = e.lastKnownX; targetZ = e.lastKnownZ;
+            }
+          } else {
+            // LOS o ruta agotada: ir directo al último punto conocido
+            targetX = e.lastKnownX; targetZ = e.lastKnownZ;
+          }
+        } else {
+          // Wander
+          e.wanderTimer -= dt;
+          if (e.wanderTimer <= 0) {
+            e.wanderTimer = 2 + Math.random() * 3;
+            e.wanderAngle = Math.random() * Math.PI * 2;
+          }
+          targetX = ex + Math.cos(e.wanderAngle) * 10;
+          targetZ = ez + Math.sin(e.wanderAngle) * 10;
+        }
+
+        const tdx = targetX - ex, tdz = targetZ - ez;
+        const tdist = Math.sqrt(tdx * tdx + tdz * tdz);
+        if (tdist < 0.5) { e.wanderTimer = 0; return; }
+
+        const spd = (e.speed + (e.accel || 0)) * dt * (getSlowFactor(ex, ez) ? 0.65 : 1.0);
+        const nx = tdx / tdist, nz = tdz / tdist;
+
+        // M7: Si el jugador está en un piso superior de un edificio transitable,
+        // el nextbot intenta moverse hacia la escalera más cercana del edificio.
+        let actualTargetX = targetX, actualTargetZ = targetZ;
+        if (playerOnUpperFloor && playerBuildingIdx >= 0 && e.chasing) {
+          const wb = WALKABLE_BLDGS[playerBuildingIdx];
+          // ¿El nextbot está dentro del mismo edificio?
+          const eInBldg = ex > wb.cx - wb.w/2 && ex < wb.cx + wb.w/2 &&
+                          ez > wb.cz - wb.d/2 && ez < wb.cz + wb.d/2;
+          if (!eInBldg) {
+            // Fuera del edificio: ir hacia la puerta primero
+            if (wb.doorFace === 'N') {
+              actualTargetZ = wb.cz - wb.d/2 - 0.1;
+            } else {
+              actualTargetZ = wb.cz + wb.d/2 + 0.1;
+            }
+            actualTargetX = wb.cx;
+          } else {
+            // Dentro del edificio: ir hacia la escalera
+            actualTargetX = wb.stair.centerX;
+            actualTargetZ = wb.stair.centerZ;
+          }
+        }
+
+        const rtdx = actualTargetX - ex, rtdz = actualTargetZ - ez;
+        const rtDist = Math.sqrt(rtdx*rtdx + rtdz*rtdz);
+        const rnx = rtDist > 0.01 ? rtdx/rtDist : nx;
+        const rnz = rtDist > 0.01 ? rtdz/rtDist : nz;
+
+        const moved = slideMove(ex, ez, rnx * spd, rnz * spd, 1.0);
+
+        e.sprite.position.x = moved.x;
+        e.sprite.position.z = moved.z;
+
+        // M7: Ajustar Y del nextbot al suelo bajo él cada 0.5s
+        if (!e.floorYTimer) e.floorYTimer = 0;
+        e.floorYTimer -= dt;
+        if (e.floorYTimer <= 0) {
+          e.floorYTimer = 0.5;
+          const targetFloorY = getEnemyFloorAt(moved.x, moved.z);
+          e.targetSpriteY = targetFloorY + ENEMY_SIZE * 0.6;
+        }
+        if (e.targetSpriteY === undefined) e.targetSpriteY = ENEMY_SIZE * 0.6;
+        // Interpolar suavemente hacia el suelo objetivo
+        e.sprite.position.y += (e.targetSpriteY - e.sprite.position.y) * Math.min(1, dt * 6);
+        e.ring.position.x = moved.x;
+        e.ring.position.z = moved.z;
+        e.ring.position.y = Math.max(0.05, e.sprite.position.y - ENEMY_SIZE * 0.55);
+
+        // ── Dynamic texture based on context
+        let targetTex;
+        if (dist < 8) targetTex = 'sorprendido';
+        else if (e.chasing) targetTex = 'enfadado';
+        else targetTex = e.type.id;
+        if (e.currentTex !== targetTex) {
+          // Disparar grito en las 3 transiciones de estado relevantes:
+          // → enfadado (empieza persecución)
+          // enfadado → sorprendido (se acerca mucho)
+          // sorprendido → enfadado (se aleja un poco pero sigue persiguiendo)
+          const grityTransition =
+            targetTex === 'enfadado' ||
+            targetTex === 'sorprendido' ||
+            (e.currentTex === 'sorprendido' && targetTex === 'enfadado');
+          if (grityTransition) playGrito();
+          e.currentTex = targetTex;
+          e.sprite.material.map = textures[targetTex];
+          e.sprite.material.needsUpdate = true;
+        }
+
+        // Pulsing ring
+        const pulse = .7 + Math.sin(Date.now() * .005) * 0.3;
+        e.ring.scale.set(pulse, pulse, pulse);
+        e.ring.material.opacity = .3 + pulse * .2;
+
+        // Kill check — M7: comprobar también diferencia de altura
+        const dyKill = (camera.position.y - PLAYER_EYE) - (e.sprite.position.y - ENEMY_SIZE * 0.6);
+        const dist3D = Math.sqrt(dist * dist + dyKill * dyKill);
+        if (dist3D < ENEMY_KILL_DIST && player.alive && !dashActive) killPlayer(e);
+      });
+    }
+
+    // ───── Audio system ─────
+    let audioCtx = null;
+    let heartbeatInterval = null;
+
+    // Local audio elements
+    let screamEl = null, screamGain = null;
+    let footstepEl = null;
+    let footstepTimer = 0;
+    const SCREAM_FILE = '222582__queen_westeros__man-scream.wav';
+    const STEP_FILE = '151238__owlstorm__hard-female-footstep-2.wav';
+    const MUSIC_FILE = '740586__numerocuatro__soundtrack-cinema.wav';
+    const GRITO_FILE = 'peereira_grito.mp3';
+    const GRITO2_FILE = 'peereira_grito2.mp3';
+
+    let musicEl = null;
+    let musicVolume = 0.10; // muy bajo por defecto
+    let gritoEl = null, grito2El = null;
+    let gritoLastPlayed = 0;          // timestamp ms — anti-saturación
+    const GRITO_COOLDOWN = 3500;      // mínimo ms entre disparos de grito
+
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // ── Scream: loop, distance-based volume via GainNode
+      screamEl = new Audio(SCREAM_FILE);
+      screamEl.loop = true;
+      screamEl.crossOrigin = 'anonymous';
+      try {
+        const src = audioCtx.createMediaElementSource(screamEl);
+        screamGain = audioCtx.createGain();
+        screamGain.gain.value = 0;
+        src.connect(screamGain);
+        screamGain.connect(audioCtx.destination);
+        screamEl.play().catch(() => { });
+      } catch (e) { console.warn('Scream audio error:', e); }
+
+      // ── Footstep: preload
+      footstepEl = new Audio(STEP_FILE);
+      footstepEl.preload = 'auto';
+
+      // ── Gritos de Peereira
+      gritoEl = new Audio(GRITO_FILE); gritoEl.preload = 'auto';
+      grito2El = new Audio(GRITO2_FILE); grito2El.preload = 'auto';
+
+      // ── Música de fondo
+      if (!musicEl) {
+        musicEl = new Audio(MUSIC_FILE);
+        musicEl.loop = true;
+        musicEl.volume = musicVolume;
+        musicEl.preload = 'auto';
+      }
+    }
+
+    function startMusic() {
+      if (!musicEl) return;
+      musicEl.currentTime = 0;
+      musicEl.volume = musicVolume;
+      musicEl.play().catch(() => { });
+    }
+
+    function stopMusic() {
+      if (!musicEl) return;
+      // Fade out suavemente
+      const fadeInterval = setInterval(() => {
+        if (musicEl.volume > 0.01) {
+          musicEl.volume = Math.max(0, musicEl.volume - 0.01);
+        } else {
+          musicEl.pause();
+          musicEl.currentTime = 0;
+          clearInterval(fadeInterval);
+        }
+      }, 40);
+    }
+
+    function updateScreamVolume(minDist) {
+      if (!screamGain) return;
+      // Silent at 60+, full at 5
+      const vol = Math.max(0, Math.min(1, (60 - minDist) / 55)) * masterVolume;
+      screamGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.15);
+    }
+
+    function playFootstep() {
+      if (!footstepEl) return;
+      // Clone to allow rapid replay
+      const clone = footstepEl.cloneNode();
+      clone.volume = 0.45;
+      clone.play().catch(() => { });
+    }
+
+    function stopScream() {
+      if (screamEl) { screamEl.pause(); screamEl.currentTime = 0; }
+    }
+
+    // Grito 1 — transiciones de estado (con cooldown anti-saturación)
+    function playGrito() {
+      if (!gritoEl) return;
+      const now = Date.now();
+      if (now - gritoLastPlayed < GRITO_COOLDOWN) return;
+      gritoLastPlayed = now;
+      const clone = gritoEl.cloneNode();
+      clone.volume = Math.min(1, masterVolume * 0.9);
+      clone.play().catch(() => { });
+    }
+
+    // Grito 2 — muerte del jugador
+    function playGrito2() {
+      if (!grito2El) return;
+      const clone = grito2El.cloneNode();
+      clone.volume = Math.min(1, masterVolume);
+      clone.play().catch(() => { });
+    }
+
+    function playHeartbeat() {
+      if (!audioCtx) return;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .3);
+      gain.connect(audioCtx.destination);
+      const osc = audioCtx.createOscillator();
+      osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + .15);
+      osc.connect(gain);
+      osc.start(); osc.stop(audioCtx.currentTime + .3);
+    }
+
+    function playAlert() {
+      if (!audioCtx) return;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .5);
+      gain.connect(audioCtx.destination);
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + .5);
+      osc.connect(gain);
+      osc.start(); osc.stop(audioCtx.currentTime + .5);
+    }
+
+    function playDeath() {
+      if (!audioCtx) return;
+      for (let i = 0; i < 5; i++) {
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(.4, audioCtx.currentTime + i * .08);
+        gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + i * .08 + .5);
+        gain.connect(audioCtx.destination);
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300 - i * 40, audioCtx.currentTime + i * .08);
+        osc.connect(gain);
+        osc.start(audioCtx.currentTime + i * .08);
+        osc.stop(audioCtx.currentTime + i * .08 + .5);
+      }
+    }
+
+    function playWin() {
+      if (!audioCtx) return;
+      [261, 329, 392, 523].forEach((f, i) => {
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(.3, audioCtx.currentTime + i * .15);
+        gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + i * .15 + .4);
+        gain.connect(audioCtx.destination);
+        const osc = audioCtx.createOscillator();
+        osc.frequency.value = f;
+        osc.connect(gain);
+        osc.start(audioCtx.currentTime + i * .15);
+        osc.stop(audioCtx.currentTime + i * .15 + .5);
+      });
+    }
+
+    function startAmbient() { /* scream replaces oscillator ambient */ }
+
+    // ───── M9: Audio 3D pasos de nextbots ─────
+    function updateEnemySteps(dt) {
+      if (!audioCtx) return;
+      enemies.forEach(e => {
+        if (!e.alive) return;
+        if (!e.stepPanner) {
+          e.stepPanner = audioCtx.createPanner();
+          e.stepPanner.panningModel = 'HRTF';
+          e.stepPanner.distanceModel = 'inverse';
+          e.stepPanner.refDistance = 1;
+          e.stepPanner.maxDistance = 40;
+          e.stepPanner.rolloffFactor = 1;
+          e.stepPanner.connect(audioCtx.destination);
+          e.stepTimer = 0.4 + Math.random() * 0.3;
+        }
+        // Actualizar posición del panner relativa a la cámara
+        const rx = e.sprite.position.x - camera.position.x;
+        const rz = e.sprite.position.z - camera.position.z;
+        e.stepPanner.positionX.setValueAtTime(rx, audioCtx.currentTime);
+        e.stepPanner.positionY.setValueAtTime(0, audioCtx.currentTime);
+        e.stepPanner.positionZ.setValueAtTime(rz, audioCtx.currentTime);
+        // Reproducir paso sintético
+        e.stepTimer -= dt;
+        if (e.stepTimer <= 0) {
+          e.stepTimer = 0.4 + Math.random() * 0.3;
+          const dist = Math.sqrt(rx * rx + rz * rz);
+          if (dist > 40) return;
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(60 + Math.random() * 30, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
+          g.gain.setValueAtTime(0.18 * masterVolume, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+          osc.connect(g);
+          g.connect(e.stepPanner);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+        }
+      });
+    }
+
+    // ───── M1: Records locales ─────
+    const LS = {
+      get bestTime() { return parseFloat(localStorage.getItem('pnb_bestTime') || 0); },
+      set bestTime(v) { localStorage.setItem('pnb_bestTime', v); },
+      get wins() { return parseInt(localStorage.getItem('pnb_wins') || 0); },
+      set wins(v) { localStorage.setItem('pnb_wins', v); },
+      get streak() { return parseInt(localStorage.getItem('pnb_streak') || 0); },
+      set streak(v) { localStorage.setItem('pnb_streak', v); },
+      get nightmareWins() { return parseInt(localStorage.getItem('pnb_nightmareWins') || 0); },
+      set nightmareWins(v) { localStorage.setItem('pnb_nightmareWins', v); },
+      get deaths() { return parseInt(localStorage.getItem('pnb_deaths') || 0); },
+      set deaths(v) { localStorage.setItem('pnb_deaths', v); }
+    };
+    function renderRecordsBlock() {
+      const rb = document.getElementById('recordsBlock');
+      if (!rb) return;
+      const bt = LS.bestTime;
+      const parts = [];
+      parts.push('Mejor tiempo: ' + (bt > 0 ? formatTime(bt) : '--:--'));
+      parts.push('Partidas ganadas: ' + LS.wins);
+      parts.push('Racha sin morir: ' + LS.streak);
+      if (LS.nightmareWins > 0) parts.push('Pesadilla ganada: ' + LS.nightmareWins + ' vez/veces');
+      rb.textContent = parts.join('  ·  ');
+      // M4: boton pesadilla
+      const eb = document.getElementById('extraBtns');
+      if (eb) {
+        eb.innerHTML = '';
+        if (LS.wins > 0 && !document.getElementById('btnNightmare')) {
+          const nb = document.createElement('button');
+          nb.className = 'btn';
+          nb.id = 'btnNightmare';
+          nb.textContent = 'MODO PESADILLA';
+          nb.style.cssText = 'background:linear-gradient(135deg,#0d0020,#1a0040);border:2px solid #4422aa;margin-top:.3rem';
+          nb.addEventListener('mouseover', () => { nb.style.boxShadow = '0 0 20px #5533cc'; });
+          nb.addEventListener('mouseout', () => { nb.style.boxShadow = ''; });
+          nb.addEventListener('click', () => {
+            nightmareMode = true;
+            document.getElementById('startScreen').style.display = 'none';
+            if (isMobile) { lockLandscape(); TOUCH_SPRINT.style.display = 'flex'; }
+            resetGame();
+          });
+          eb.appendChild(nb);
+        }
+      }
+    }
+    function buildRecordsSummary() {
+      const bt = LS.bestTime;
+      return 'Mejor: ' + (bt > 0 ? formatTime(bt) : '--:--') + ' · Victorias: ' + LS.wins + ' · Racha: ' + LS.streak;
+    }
+
+    // ───── Puzzle logic ─────
+    const interactHintEl = document.getElementById('interactHint');
+    const exitHintEl = document.getElementById('exitHint');
+    const genHUDEl = document.getElementById('genHUD');
+    let nearGenerator = -1;
+
+    function updatePuzzle() {
+      const px = camera.position.x, pz = camera.position.z;
+      nearGenerator = -1;
+
+      generatorMeshes.forEach((g, i) => {
+        if (g.activated) return;
+        const d = Math.sqrt((px - g.x) ** 2 + (pz - g.z) ** 2);
+        if (d < 3.5) nearGenerator = i;
+        // Pulsing glow
+        const t = Date.now() * .003;
+        generatorLights[i].intensity = 1.5 + Math.sin(t + i) * 0.8;
+      });
+
+      // Interact hint
+      const nearGen = nearGenerator >= 0;
+      interactHintEl.style.opacity = nearGen ? '1' : '0';
+      if (isMobile) {
+        TOUCH_INTERACT.style.display = nearGen ? 'flex' : 'none';
+        if (nearGen) TOUCH_INTERACT.classList.add('pulse');
+        else TOUCH_INTERACT.classList.remove('pulse');
+      }
+
+      // Exit check — only open if all generators activated
+      if (exitOpen) {
+        const ed = Math.sqrt((px - EXIT_X) ** 2 + (pz - EXIT_Z) ** 2);
+        exitHintEl.style.opacity = ed < 8 ? '1' : '0';
+        // Spin ring
+        exitGroup.rotation.y += 0.01;
+        exitLight.intensity = 2 + Math.sin(Date.now() * .004) * .5;
+        if (ed < 3) winGame();
+      } else {
+        exitHintEl.style.opacity = '0';
+      }
+
+      genHUDEl.textContent = `GENERADORES: ${gensActivated} / ${GENS_NEEDED}`;
+    }
+
+    // ───── M22: Partículas de generador (pool pre-creado, color verde genOnMat) ─────
+    const GEN_PARTICLE_COUNT = 40;
+    const genPtGeo = new THREE.BufferGeometry();
+    const genPtPos = new Float32Array(GEN_PARTICLE_COUNT * 3);
+    genPtGeo.setAttribute('position', new THREE.BufferAttribute(genPtPos, 3));
+    const genPtMat = new THREE.PointsMaterial({ color: 0x00ff44, size: 0.08, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false });
+    const genPtSystem = new THREE.Points(genPtGeo, genPtMat);
+    scene.add(genPtSystem);
+    let genPtActive = false, genPtLife = 0;
+    const genPtVels = Array.from({ length: GEN_PARTICLE_COUNT }, () => ({ vx: 0, vy: 0, vz: 0 }));
+    const genPtOrigin = { x: 0, z: 0 };
+
+    function fireGenParticles(x, z) {
+      genPtOrigin.x = x; genPtOrigin.z = z;
+      for (let i = 0; i < GEN_PARTICLE_COUNT; i++) {
+        genPtPos[i * 3] = x + (Math.random() - 0.5) * 0.5;
+        genPtPos[i * 3 + 1] = 3.8;
+        genPtPos[i * 3 + 2] = z + (Math.random() - 0.5) * 0.5;
+        genPtVels[i].vx = (Math.random() - 0.5) * 2;
+        genPtVels[i].vy = 2 + Math.random() * 3;
+        genPtVels[i].vz = (Math.random() - 0.5) * 2;
+      }
+      genPtGeo.attributes.position.needsUpdate = true;
+      genPtMat.opacity = 1;
+      genPtActive = true;
+      genPtLife = 1.0;
+    }
+
+    function updateGenParticles(dt) {
+      if (!genPtActive) return;
+      genPtLife -= dt;
+      if (genPtLife <= 0) { genPtMat.opacity = 0; genPtActive = false; return; }
+      for (let i = 0; i < GEN_PARTICLE_COUNT; i++) {
+        genPtVels[i].vy -= dt * 5;
+        genPtPos[i * 3] += genPtVels[i].vx * dt;
+        genPtPos[i * 3 + 1] += genPtVels[i].vy * dt;
+        genPtPos[i * 3 + 2] += genPtVels[i].vz * dt;
+      }
+      genPtGeo.attributes.position.needsUpdate = true;
+      genPtMat.opacity = Math.max(0, genPtLife);
+    }
+
+    // ───── Spark particles ─────
+    const sparkParticles = [];
+
+    function spawnSparks(x, y, z) {
+      const count = 38;
+      const geo = new THREE.BufferGeometry();
+      const positions = new Float32Array(count * 3);
+      const velocities = [];
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = (Math.random() - 0.5) * Math.PI;
+        const spd = 2.5 + Math.random() * 5;
+        velocities.push({
+          vx: Math.cos(theta) * Math.cos(phi) * spd,
+          vy: Math.abs(Math.sin(phi)) * spd + 2,
+          vz: Math.sin(theta) * Math.cos(phi) * spd
+        });
+      }
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({
+        color: 0xffdd44, size: 0.22, sizeAttenuation: true,
+        transparent: true, opacity: 1, depthWrite: false
+      });
+      const pts = new THREE.Points(geo, mat);
+      scene.add(pts);
+      sparkParticles.push({ pts, velocities, positions, life: 1.0 });
+      // Second burst: blue-white sparks
+      const geo2 = geo.clone();
+      const mat2 = new THREE.PointsMaterial({
+        color: 0xaaddff, size: 0.14, sizeAttenuation: true,
+        transparent: true, opacity: 1, depthWrite: false
+      });
+      const pts2 = new THREE.Points(geo2, mat2);
+      const vel2 = velocities.map(v => ({ vx: v.vx * 0.6, vy: v.vy * 1.3, vz: v.vz * 0.6 }));
+      scene.add(pts2);
+      sparkParticles.push({ pts: pts2, velocities: vel2, positions: new Float32Array(positions), life: 0.7 });
+    }
+
+    function updateSparks(dt) {
+      for (let si = sparkParticles.length - 1; si >= 0; si--) {
+        const s = sparkParticles[si];
+        s.life -= dt * 1.4;
+        if (s.life <= 0) {
+          scene.remove(s.pts);
+          s.pts.geometry.dispose();
+          s.pts.material.dispose();
+          sparkParticles.splice(si, 1);
+          continue;
+        }
+        const pos = s.pts.geometry.attributes.position.array;
+        for (let i = 0; i < s.velocities.length; i++) {
+          const v = s.velocities[i];
+          v.vy -= dt * 9.8;
+          pos[i * 3] += v.vx * dt;
+          pos[i * 3 + 1] += v.vy * dt;
+          pos[i * 3 + 2] += v.vz * dt;
+        }
+        s.pts.geometry.attributes.position.needsUpdate = true;
+        s.pts.material.opacity = Math.max(0, s.life * 1.2);
+      }
+    }
+
+    // ───── Frases de Peereira ─────
+    const PEEREIRA_QUOTES = [
+      "SOY EL MEJOR STREAMER QUE EXISTE",
+      "me cago en todo lo que se mueve",
+      "esto es injugable, tio",
+      "no puede ser, en serio",
+      "AAAAAAAH QUE RABIA",
+      "estaban todos cheteados",
+      "es que el juego está completamente roto",
+      "como me matan ASI, en serio",
+      "equipo de bots absolutos",
+      "llevo 300 horas y me pasan estas cosas",
+      "me tienen manía, lo juro",
+      "si fuera yo lo hacen al momento",
+      "QUE HAGO MAL, DIGAME",
+      "madre mia qué nivel tan horrible",
+      "me cago en la madre que me parió",
+      "esto no es justo, esto no es justo",
+      "soy el mejor jugando y me pasan estas cosas",
+      "te reviento el PC, te lo juro",
+      "NOOOOO QUÉ ESTÁ PASANDO",
+      "da igual, da igual... NO DA IGUAL",
+      "pero bueno... ¿qué ha sido eso?",
+      "soy Peereira7, el mejor streamer",
+      "castor confirma",
+    ];
+
+    let quoteTimer = 0;
+    let quoteVisible = false;
+    let quoteIdx = -1;
+    const quoteEl = document.getElementById('peereiraquote');
+
+    function updateQuotes(dt) {
+      if (gameState !== 'playing') return;
+      quoteTimer -= dt;
+      if (quoteTimer <= 0) {
+        if (!quoteVisible) {
+          // Mostrar nueva frase
+          let next;
+          do { next = Math.floor(Math.random() * PEEREIRA_QUOTES.length); } while (next === quoteIdx);
+          quoteIdx = next;
+          quoteEl.textContent = PEEREIRA_QUOTES[quoteIdx];
+          quoteEl.style.animation = 'none';
+          void quoteEl.offsetWidth; // reflow
+          quoteEl.style.animation = 'quoteFade 4.5s ease forwards';
+          quoteVisible = true;
+          quoteTimer = 4.5;
+          // M18: logro ultimas palabras
+          achQuotesSeen.add(quoteIdx);
+          if (achQuotesSeen.size >= 5) unlockAchievement('last_words');
+        } else {
+          quoteVisible = false;
+          quoteTimer = 6 + Math.random() * 10; // pausa entre frases
+        }
+      }
+    }
+
+    // M3 — Posiciones aleatorias de generadores
+    const GEN_POSITIONS_DEFAULT = [{ x: 75, z: -65 }, { x: -80, z: 55 }, { x: 10, z: 90 }];
+    function generateRandomGenPositions() {
+      const MIN_BETWEEN = 30, MIN_SPAWN = 25;
+      const positions = [];
+      let attempts = 0;
+      while (positions.length < 3 && attempts < 50) {
+        attempts++;
+        const x = (Math.random() - 0.5) * (GROUND_SIZE - 30);
+        const z = (Math.random() - 0.5) * (GROUND_SIZE - 30);
+        if (Math.sqrt(x * x + z * z) < MIN_SPAWN) continue;
+        if (collidesWithWalls(x, z, 2)) continue;
+        let ok = true;
+        for (const p of positions) {
+          if (Math.sqrt((x - p.x) ** 2 + (z - p.z) ** 2) < MIN_BETWEEN) { ok = false; break; }
+        }
+        if (ok) positions.push({ x, z });
+      }
+      return positions.length === 3 ? positions : GEN_POSITIONS_DEFAULT.slice();
+    }
+    function repositionGenerators(positions) {
+      positions.forEach(({ x, z }, i) => {
+        const g = generatorMeshes[i];
+        g.x = x; g.z = z;
+        g.body.position.set(x, 1.5, z);
+        g.orb.position.set(x, 3.5, z);
+        generatorLights[i].position.set(x, 4, z);
+      });
+    }
+
+    function activateGenerator(i) {
+      const g = generatorMeshes[i];
+      if (g.activated) return;
+      g.activated = true;
+      gensActivated++;
+      // Visual change
+      g.body.material.color.setHex(0x00ff44);
+      g.body.material.emissive.setHex(0x00ff44);
+      g.body.material.emissiveIntensity = 1.5;
+      g.orb.material.color.setHex(0x00ff44);
+      g.orb.material.emissive.setHex(0x00ff44);
+      generatorLights[i].color.setHex(0x00ff44);
+      generatorLights[i].intensity = 4;
+      // Chispas
+      spawnSparks(g.x, 3.8, g.z);
+      // M22: partículas verdes pooled
+      fireGenParticles(g.x, g.z);
+      // M18: logro generador
+      checkAchievementsOnGenActivate(i);
+      // M2: incrementar velocidad de todos los enemigos activos un 15%
+      enemies.forEach(e => { if (e.alive) e.speed *= 1.15; });
+      // M26: haptics generador
+      if (navigator.vibrate) navigator.vibrate(120);
+      // M30: sonido de generador (archivo local)
+      try {
+        const genSnd = new Audio('peereiragenerador.mp3');
+        genSnd.volume = Math.min(1, masterVolume);
+        genSnd.play().catch(() => { });
+      } catch (_) { }
+      // SFX via AudioContext
+      if (audioCtx) {
+        const g2 = audioCtx.createGain();
+        g2.gain.setValueAtTime(.25, audioCtx.currentTime);
+        g2.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .8);
+        g2.connect(audioCtx.destination);
+        const osc = audioCtx.createOscillator();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + .3);
+        osc.connect(g2);
+        osc.start(); osc.stop(audioCtx.currentTime + .8);
+      }
+      if (gensActivated >= GENS_NEEDED) {
+        exitOpen = true;
+        exitLight.intensity = 3;
+        exitRing.material.color.setHex(0x00ffcc);
+        exitRing.material.emissive.setHex(0x00ffcc);
+        exitRing.material.emissiveIntensity = 2;
+        exitFill.material.color.setHex(0x00ffcc);
+      }
+    }
+
+    // E key to interact
+    document.addEventListener('keydown', ev => {
+      if (ev.code === 'KeyE' && gameState === 'playing' && nearGenerator >= 0) {
+        activateGenerator(nearGenerator);
+      }
+    });
+    const redOverlay = document.getElementById('redOverlay');
+    const warning = document.getElementById('warning');
+    let warningShown = false;
+    let lastAlertTime = 0;
+    let shakeAmount = 0;
+    let cameraShakeX = 0, cameraShakeY = 0;
+    let bobTime = 0;
+
+    function updateEffects(dt, minDist) {
+      // Scream volume based on distance
+      updateScreamVolume(minDist);
+
+      // Red overlay
+      const danger = Math.max(0, Math.min(1, (25 - minDist) / 20));
+      const r = Math.floor(danger * 200), a = danger * 0.75;
+      redOverlay.style.background = `radial-gradient(ellipse at center, transparent 20%, rgba(${r},0,0,${a}) 100%)`;
+      redOverlay.style.boxShadow = danger > 0.5 ? `inset 0 0 ${danger * 80}px rgba(255,0,0,${danger * .5})` : 'none';
+
+      // Warning text (guard during blackout)
+      if (!blackoutWarning) {
+        if (minDist < 15) {
+          warning.style.opacity = '1';
+          warning.style.fontSize = `${1.5 + (15 - minDist) / 10}rem`;
+          warning.textContent = 'SE ACERCA';
+          if (!warningShown || Date.now() - lastAlertTime > 3000) {
+            playAlert(); lastAlertTime = Date.now(); warningShown = true;
+          }
+        } else {
+          warning.style.opacity = '0';
+          warningShown = false;
+        }
+      }
+
+      // Camera shake when very close
+      shakeAmount = minDist < 8 ? (.4 * (8 - minDist) / 8) : 0;
+      cameraShakeX = (Math.random() - .5) * shakeAmount;
+      cameraShakeY = (Math.random() - .5) * shakeAmount;
+
+      // Heartbeat speed
+      clearInterval(heartbeatInterval);
+      if (minDist < 30) {
+        const interval = Math.max(200, 800 - (30 - minDist) * 25);
+        heartbeatInterval = setInterval(playHeartbeat, interval);
+      }
+
+      // M23: pulso de peligro en pantalla
+      if (minDist < 20) {
+        const freq = 0.003 + (1 - minDist / 20) * 0.012;
+        const pulse = Math.abs(Math.sin(Date.now() * freq));
+        const pOpacity = pulse * 0.35;
+        const pDanger = Math.max(0, Math.min(1, (20 - minDist) / 15));
+        const pr = Math.floor(pDanger * 220);
+        const curBg = `radial-gradient(ellipse at center, transparent 20%, rgba(${pr},0,0,${danger * 0.75 + pOpacity}) 100%)`;
+        redOverlay.style.background = curBg;
+      }
+
+      // M11: distorsion CSS por proximidad
+      if (minDist < 15) {
+        const factor = 1 - minDist / 15;
+        const blurVal = (factor * 1.5).toFixed(2);
+        const hueVal = (factor * 12).toFixed(1);
+        canvas.style.filter = `blur(${blurVal}px) hue-rotate(${hueVal}deg)`;
+      } else {
+        canvas.style.filter = '';
+      }
+    }
+
+    // ───── Game state ─────
+    let gameState = 'menu'; // menu, playing, dead, win
+    let survivalTime = 0;
+    let TOTAL_TIME = 180;
+    let nightmareMode = false;
+    let spawnTimers = [...ENEMY_TYPES.map(t => t.spawnAt)];
+    let spawnDone = [...new Array(ENEMY_TYPES.length).fill(false)];
+
+    // M8: blackout globals
+    let blackoutTimer = 45 + Math.random() * 15;
+    let blackoutActive = false;
+    let blackoutEndTimer = 0;
+    let blackoutWarning = false;
+
+    // M28: pausa
+    let gamePaused = false;
+
+    // M20: estadisticas de partida
+    let distanceTraveled = 0;
+    let closeCalls = 0;
+    let wasCloseCall = false;
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+      return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+
+    // M8: sistema de apagon
+    function updateBlackout(dt) {
+      if (gameState !== 'playing') return;
+      if (!blackoutActive) {
+        blackoutTimer -= dt;
+        if (blackoutTimer <= 0) {
+          blackoutActive = true;
+          blackoutEndTimer = 8;
+          blackoutWarning = true;
+          ambientLight.intensity = 0.05;
+          dirLight.intensity = 0;
+          scenePointLights.forEach(pl => { pl._sv = pl.intensity; pl.intensity = 0; });
+          generatorLights.forEach(gl => { gl._sv = gl.intensity; gl.intensity = 0; });
+          if (musicEl) {
+            const tv = 0.05; const t0 = Date.now();
+            const fi = setInterval(() => {
+              const p = Math.min(1, (Date.now() - t0) / 500);
+              musicEl.volume = Math.max(tv, musicEl.volume * (1 - p * 0.3));
+              if (p >= 1) { musicEl.volume = tv; clearInterval(fi); }
+            }, 30);
+          }
+          warning.textContent = 'APAGON';
+          warning.style.opacity = '1';
+          setTimeout(() => {
+            if (blackoutActive) {
+              warning.style.opacity = '0';
+              blackoutWarning = false;
+            }
+          }, 2000);
+        }
+      } else {
+        blackoutEndTimer -= dt;
+        if (blackoutEndTimer <= 0) {
+          blackoutActive = false;
+          blackoutTimer = 45 + Math.random() * 15;
+          blackoutWarning = false;
+          warning.textContent = 'SE ACERCA';
+          const t0 = Date.now();
+          const ri = setInterval(() => {
+            const p = Math.min(1, (Date.now() - t0) / 1000);
+            ambientLight.intensity = 0.05 + (1.4 - 0.05) * p;
+            dirLight.intensity = 0.55 * p;
+            scenePointLights.forEach(pl => { pl.intensity = (pl._sv || 1.2) * p; });
+            generatorLights.forEach(gl => { gl.intensity = (gl._sv || 2) * p; });
+            if (musicEl) musicEl.volume = Math.min(musicVolume, (musicEl.volume || 0) + (musicVolume / 33));
+            if (p >= 1) clearInterval(ri);
+          }, 30);
+        }
+      }
+    }
+
+    function killPlayer(killer) {
+      if (!player.alive) return;
+      player.alive = false;
+      gameState = 'dead';
+      // M1: actualizar records
+      LS.deaths = LS.deaths + 1;
+      LS.streak = 0;
+      if (survivalTime > LS.bestTime) LS.bestTime = survivalTime;
+      checkAchievementsOnDeath();
+      // M26: haptics
+      if (navigator.vibrate) navigator.vibrate([400, 100, 400]);
+      playDeath();
+      playGrito2();
+      clearInterval(heartbeatInterval);
+      stopScream();
+      stopMusic();
+      document.exitPointerLock();
+      if (isMobile) { TOUCH_INTERACT.style.display = 'none'; TOUCH_SPRINT.style.display = 'none'; const tpb = document.getElementById('touchPause'); if (tpb) tpb.style.display = 'none'; }
+      if (minimapCanvas) minimapCanvas.style.display = 'none';
+      const imgSrc = IMGS[killer.type.id] || IMGS['base'];
+      // M12: jumpscare
+      const jsDiv = document.getElementById('jumpscareDiv');
+      const jsImg = document.getElementById('jumpscareImg');
+      if (jsDiv && jsImg) {
+        jsImg.src = imgSrc;
+        jsDiv.style.display = 'flex';
+        if (audioCtx) {
+          const jg = audioCtx.createGain();
+          const freq = 800 + Math.random() * 400;
+          jg.gain.setValueAtTime(0.5 * masterVolume, audioCtx.currentTime);
+          jg.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+          jg.connect(audioCtx.destination);
+          const jo = audioCtx.createOscillator();
+          jo.frequency.value = freq;
+          jo.connect(jg);
+          jo.start(); jo.stop(audioCtx.currentTime + 0.3);
+        }
+        setTimeout(() => { jsDiv.style.display = 'none'; }, 300);
+      }
+      document.getElementById('deathFace').src = imgSrc;
+      document.getElementById('deathTime').textContent = `Sobreviviste: ${formatTime(survivalTime)}`;
+      // M20: Estadisticas
+      document.getElementById('deathRecords').innerHTML = `${buildRecordsSummary()}<br>Recorrido: ${Math.floor(distanceTraveled)}m · Generadores: ${gensActivated}/${GENS_NEEDED} · Sustos: ${closeCalls}`;
+      setTimeout(() => {
+        document.getElementById('deathScreen').style.display = 'flex';
+      }, 800);
+    }
+
+    function winGame() {
+      if (!player.alive) return;
+      player.alive = false;
+      gameState = 'win';
+      // M1: actualizar records
+      LS.wins = LS.wins + 1;
+      LS.streak = LS.streak + 1;
+      if (nightmareMode) LS.nightmareWins = LS.nightmareWins + 1;
+      if (survivalTime > LS.bestTime) LS.bestTime = survivalTime;
+      checkAchievementsOnWin();
+      nightmareMode = false;
+      renderRecordsBlock();
+      // M26: haptics victoria
+      if (navigator.vibrate) navigator.vibrate([200, 80, 200, 80, 200]);
+      playWin();
+      clearInterval(heartbeatInterval);
+      stopScream();
+      stopMusic();
+      document.exitPointerLock();
+      if (isMobile) { TOUCH_INTERACT.style.display = 'none'; TOUCH_SPRINT.style.display = 'none'; const tpb = document.getElementById('touchPause'); if (tpb) tpb.style.display = 'none'; }
+      if (minimapCanvas) minimapCanvas.style.display = 'none';
+      document.getElementById('winFace').src = IMGS['ganador'];
+      document.getElementById('winTime').textContent = `Sobreviviste los 3 minutos completos.`;
+      // M20: Estadisticas
+      document.getElementById('winRecords').innerHTML = `${buildRecordsSummary()}<br>Recorrido: ${Math.floor(distanceTraveled)}m · Generadores: ${gensActivated}/${GENS_NEEDED} · Sustos: ${closeCalls}`;
+      setTimeout(() => {
+        document.getElementById('winScreen').style.display = 'flex';
+      }, 500);
+    }
+
+    function resetGame() {
+      // Clear enemies
+      enemies.forEach(e => {
+        scene.remove(e.sprite); scene.remove(e.ring);
+        if (e.stepPanner) { try { e.stepPanner.disconnect(); } catch (_) {} e.stepPanner = null; }
+        if (e.trailSprites) e.trailSprites.forEach(ts => { ts.used = false; ts.sprite.visible = false; });
+      });
+      enemies.length = 0;
+
+      // Reset puzzle
+      gensActivated = 0; exitOpen = false; nearGenerator = -1;
+      const offColor = new THREE.Color(0x440000);
+      const offEmissive = new THREE.Color(0x220000);
+      generatorMeshes.forEach((g, i) => {
+        g.activated = false;
+        g.body.material.color.copy(offColor);
+        g.body.material.emissive.copy(offEmissive);
+        g.body.material.emissiveIntensity = 1;
+        g.orb.material.color.copy(offColor);
+        g.orb.material.emissive.copy(offEmissive);
+        generatorLights[i].color.setHex(0xff2200);
+        generatorLights[i].intensity = 2;
+      });
+      // M3: reposicionar generadores aleatoriamente
+      repositionGenerators(generateRandomGenPositions());
+      exitLight.intensity = 0;
+      exitRing.material.color.setHex(0x005566);
+      exitRing.material.emissive.setHex(0x003344);
+      exitRing.material.emissiveIntensity = 1;
+      exitFill.material.color.setHex(0x001122);
+      exitGroup.rotation.y = 0;
+      interactHintEl.style.opacity = '0';
+      exitHintEl.style.opacity = '0';
+
+      // Reset player
+      camera.position.set(0, 1.7, 0);
+      player.yaw = 0; player.pitch = 0;
+      player.stamina = 1.0;
+      player.alive = true;
+      player.velX = 0; player.velZ = 0;
+      // M7: reset vertical physics
+      playerVelY = 0;
+      playerOnGround = true;
+      playerFallFromY = 1.7;
+      landingPauseTimer = 0;
+      playerOnUpperFloor = false;
+      playerBuildingIdx = -1;
+
+      // Reset timers
+      survivalTime = 0;
+      spawnDone = new Array(ENEMY_TYPES.length).fill(false);
+
+      // Reset screens
+      document.getElementById('deathScreen').style.display = 'none';
+      document.getElementById('winScreen').style.display = 'none';
+      document.getElementById('startScreen').style.display = 'none';
+      blocker.style.display = 'none';
+
+      // Clear effects
+      clearInterval(heartbeatInterval);
+      redOverlay.style.background = 'none';
+      warning.style.opacity = '0';
+      warningShown = false;
+      gritoLastPlayed = 0;
+      quoteTimer = 5; quoteVisible = false;
+      if (quoteEl) quoteEl.style.opacity = '0';
+      touchSprinting = false;
+      dashActive = false; dashTimer = 0; dashCooldown = 0;
+      if (dashHUDEl) dashHUDEl.style.display = 'none';
+      resetAchievementSession();
+      // M8: reset blackout
+      blackoutActive = false;
+      blackoutWarning = false;
+      blackoutTimer = 45 + Math.random() * 15;
+      ambientLight.intensity = 1.4;
+      dirLight.intensity = 0.55;
+      scenePointLights.forEach(pl => { pl.intensity = pl._sv || 1.2; });
+      if (TOUCH_SPRINT) { TOUCH_SPRINT.classList.remove('active'); TOUCH_SPRINT.textContent = 'CORRER'; }
+
+      gameState = 'playing';
+      // M4: aplicar ajustes de pesadilla
+      if (nightmareMode) {
+        TOTAL_TIME = 300;
+        ENEMY_TYPES.forEach(t => { t._baseSpeed = t._baseSpeed || t.speed; t.speed = t._baseSpeed * 1.4; });
+        spawnDone = new Array(ENEMY_TYPES.length).fill(false);
+        spawnEnemy('base');
+        spawnEnemy('enfadado');
+        spawnEnemy('base');
+      } else {
+        TOTAL_TIME = 180;
+        ENEMY_TYPES.forEach(t => { if (t._baseSpeed) t.speed = t._baseSpeed; });
+        spawnEnemy('base');
+      }
+
+      // M28: Pausa movil
+      const touchPauseBtn = document.getElementById('touchPause');
+      if (touchPauseBtn) touchPauseBtn.style.display = isMobile ? 'flex' : 'none';
+
+      if (!isMobile) canvas.requestPointerLock();
+      else { pointerLocked = true; blocker.style.display = 'none'; }
+      initAudio();
+      // Reanudar contexto si el browser lo suspendió entre partidas
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      // Relanzar scream (fue pausado por stopScream al morir/ganar)
+      if (screamEl) { screamEl.currentTime = 0; screamEl.play().catch(() => { }); }
+      startAmbient();
+      startMusic();
+      showTutorialHint();
+    }
+
+    // ───── HUD update ─────
+    const timerEl = document.getElementById('timer');
+    const enemyCountEl = document.getElementById('enemyCount');
+    const staminaBarEl = document.getElementById('staminaBar');
+
+    function updateHUD() {
+      const remaining = Math.max(0, TOTAL_TIME - survivalTime);
+      timerEl.textContent = formatTime(remaining);
+      timerEl.style.color = remaining < 30 ? '#ff4444' : remaining < 60 ? '#ffaa00' : '#ffffff';
+      enemyCountEl.textContent = `CASTORES: ${enemies.filter(e => e.alive).length}`;
+      staminaBarEl.style.width = `${player.stamina * 100}%`;
+      staminaBarEl.style.background = player.stamina < 0.3
+        ? 'linear-gradient(90deg,#cc0000,#ff4444)'
+        : 'linear-gradient(90deg,#00cc44,#44ff88)';
+    }
+
+    // ───── Mobile controls ─────
+    const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    let joystickActive = false;
+    let joystickOriginX = 0, joystickOriginY = 0;
+    let joystickDX = 0, joystickDY = 0;
+    let lookOriginX = 0, lookOriginY = 0;
+    let lookTouchId = -1, joyTouchId = -1;
+    let touchSprinting = false;
+    const JOYZONE = document.getElementById('joystickZone');
+    const JOYKB = document.getElementById('joystickKnob');
+    const LOOKZONE = document.getElementById('lookZone');
+    const TOUCH_INTERACT = document.getElementById('touchInteract');
+    const TOUCH_SPRINT = document.getElementById('touchSprint');
+
+    // Try to lock orientation to landscape on mobile
+    function lockLandscape() {
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => { });
+        }
+      } catch (e) { }
+    }
+
+    if (isMobile) {
+      lockLandscape();
+      JOYZONE.style.display = 'block';
+      LOOKZONE.style.display = 'block';
+      TOUCH_INTERACT.style.display = 'none'; // shown only when near generator
+      TOUCH_SPRINT.style.display = 'flex';
+      pointerLocked = true;
+
+      // Joystick: dynamic — follows first touch in left 45% of screen
+      const MAXR = 46;
+
+      // Sprint button — TOGGLE
+      TOUCH_SPRINT.addEventListener('touchstart', e => {
+        e.stopPropagation();
+        touchSprinting = !touchSprinting;
+        TOUCH_SPRINT.classList.toggle('active', touchSprinting);
+        TOUCH_SPRINT.textContent = touchSprinting ? 'SPRINT ON' : 'CORRER';
+      }, { passive: true });
+
+      // M5: Dash button
+      if (TOUCH_DASH) {
+        TOUCH_DASH.style.display = 'flex';
+        TOUCH_DASH.addEventListener('touchstart', e => {
+          e.stopPropagation();
+          if (gameState === 'playing') triggerDash();
+        }, { passive: true });
+      }
+
+      // Interact button
+      TOUCH_INTERACT.addEventListener('touchstart', e => {
+        e.stopPropagation();
+        if (gameState === 'playing' && nearGenerator >= 0) activateGenerator(nearGenerator);
+      }, { passive: true });
+
+      document.addEventListener('touchstart', e => {
+        [...e.changedTouches].forEach(t => {
+          // Skip if touching UI buttons
+          const el = document.elementFromPoint(t.clientX, t.clientY);
+          if (el && (el.id === 'touchInteract' || el.id === 'touchSprint' || el.id === 'settingsBtn')) return;
+
+          if (t.clientX < innerWidth * 0.45 && joyTouchId < 0) {
+            joyTouchId = t.identifier;
+            // Dynamic joystick: re-anchor to wherever the player presses
+            joystickOriginX = t.clientX;
+            joystickOriginY = t.clientY;
+            JOYZONE.style.left = (t.clientX - 65) + 'px';
+            JOYZONE.style.bottom = 'auto';
+            JOYZONE.style.top = (t.clientY - 65) + 'px';
+            JOYKB.style.transform = 'translate(-50%,-50%)';
+            joystickActive = true;
+          } else if (t.clientX >= innerWidth * 0.45 && lookTouchId < 0) {
+            lookTouchId = t.identifier;
+            lookOriginX = t.clientX;
+            lookOriginY = t.clientY;
+          }
+        });
+        if (gameState === 'playing') initAudio();
+      }, { passive: true });
+
+      document.addEventListener('touchmove', e => {
+        e.preventDefault(); // prevent scroll/bounce
+        [...e.changedTouches].forEach(t => {
+          if (t.identifier === joyTouchId) {
+            const dx = t.clientX - joystickOriginX;
+            const dy = t.clientY - joystickOriginY;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            const cx = dx / Math.max(d, MAXR) * Math.min(d, MAXR);
+            const cy = dy / Math.max(d, MAXR) * Math.min(d, MAXR);
+            JOYKB.style.transform = `translate(calc(-50% + ${cx}px), calc(-50% + ${cy}px))`;
+            joystickDX = cx / MAXR;
+            joystickDY = cy / MAXR;
+          }
+          if (t.identifier === lookTouchId) {
+            const ldx = t.clientX - lookOriginX;
+            const ldy = t.clientY - lookOriginY;
+            lookOriginX = t.clientX;
+            lookOriginY = t.clientY;
+            // Adaptive sensitivity: faster swipe = higher sens feel
+            const sens = isMobile ? 2.2 : 1.5;
+            mouseDX += ldx * sens;
+            mouseDY += ldy * sens;
+          }
+        });
+      }, { passive: false });
+
+      document.addEventListener('touchend', e => {
+        [...e.changedTouches].forEach(t => {
+          if (t.identifier === joyTouchId) {
+            joyTouchId = -1;
+            joystickActive = false;
+            joystickDX = joystickDY = 0;
+            JOYKB.style.transform = 'translate(-50%,-50%)';
+            // Reset joystick position
+            JOYZONE.style.left = '20px';
+            JOYZONE.style.top = 'auto';
+            JOYZONE.style.bottom = '20px';
+          }
+          if (t.identifier === lookTouchId) {
+            lookTouchId = -1;
+          }
+        });
+      }, { passive: true });
+
+      // Re-lock on orientation change
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          lockLandscape();
+          renderer.setSize(innerWidth, innerHeight);
+          camera.aspect = innerWidth / innerHeight;
+          camera.updateProjectionMatrix();
+        }, 250);
+      });
+    }
+
+    // ───── Main loop ─────
+    let lastTime = 0;
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((now - lastTime) / 1000, .05);
+      lastTime = now;
+
+      if (gameState !== 'playing') {
+        renderer.render(scene, camera);
+        return;
+      }
+      if (gamePaused) {
+        renderer.render(scene, camera);
+        return;
+      }
+
+      // ── Spawn schedule
+      ENEMY_TYPES.forEach((type, i) => {
+        if (!spawnDone[i] && survivalTime >= type.spawnAt) {
+          spawnEnemy(type.id);
+          spawnDone[i] = true;
+        }
+      });
+
+      // ── Survival timer
+      survivalTime += dt;
+      if (survivalTime >= TOTAL_TIME) { winGame(); return; }
+
+      // ── Camera rotation from mouse
+      player.yaw -= mouseDX * mouseSens;
+      player.pitch -= mouseDY * mouseSens;
+      player.pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, player.pitch));
+      mouseDX = mouseDY = 0;
+
+      // ── Movement
+      const inSlowZone = getSlowFactor(camera.position.x, camera.position.z);
+      const moveSpeed = inSlowZone ? (touchSprinting && player.stamina > 0 ? player.speed * 1.7 : player.speed) * 0.55
+        : (touchSprinting && player.stamina > 0 ? player.speed * 1.7 : player.speed);
+
+      // Forward vector (ignoring pitch for movement)
+      const fwdX = Math.sin(player.yaw);
+      const fwdZ = Math.cos(player.yaw);
+      const rightX = Math.cos(player.yaw);
+      const rightZ = -Math.sin(player.yaw);
+
+      let moveX = 0, moveZ = 0;
+      if (keys['KeyW'] || keys['ArrowUp']) { moveX -= fwdX; moveZ -= fwdZ; }
+      if (keys['KeyS'] || keys['ArrowDown']) { moveX += fwdX; moveZ += fwdZ; }
+      if (keys['KeyA'] || keys['ArrowLeft']) { moveX -= rightX; moveZ -= rightZ; }
+      if (keys['KeyD'] || keys['ArrowRight']) { moveX += rightX; moveZ += rightZ; }
+
+      // Mobile joystick
+      if (isMobile && joystickActive) {
+        moveX += fwdX * joystickDY + rightX * joystickDX;
+        moveZ += fwdZ * joystickDY + rightZ * joystickDX;
+      }
+
+      const moveMag = Math.sqrt(moveX * moveX + moveZ * moveZ);
+
+      // Stamina — solo se gasta si te mueves con sprint activo
+      if (touchSprinting && player.stamina > 0 && moveMag > 0) { player.stamina = Math.max(0, player.stamina - dt * .2); achSprintUsed = true; }
+      else player.stamina = Math.min(1, player.stamina + dt * .18);
+      if (moveMag > 0) {
+        const nx = moveX / moveMag, nz = moveZ / moveMag;
+        const pos = slideMove(camera.position.x, camera.position.z, nx * moveSpeed * dt, nz * moveSpeed * dt, player.RADIUS);
+        // M20: acumular distancia
+        const mdx = pos.x - camera.position.x, mdz = pos.z - camera.position.z;
+        distanceTraveled += Math.sqrt(mdx * mdx + mdz * mdz);
+        camera.position.x = pos.x;
+        camera.position.z = pos.z;
+        // Footsteps
+        footstepTimer -= dt;
+        if (footstepTimer <= 0) {
+          footstepTimer = touchSprinting ? 0.28 : 0.48;
+          playFootstep();
+        }
+      } else {
+        footstepTimer = 0;
+      }
+
+      // M7: Vertical physics (gravity + floor detection)
+      updatePlayerY(dt);
+
+      // Camera bob — sólo si está en el suelo y moviéndose
+      if (moveMag > 0 && playerOnGround && landingPauseTimer <= 0) {
+        bobTime += dt * (touchSprinting ? 12 : 7);
+        // Añadimos el bob por encima de la Y calculada por updatePlayerY
+        camera.position.y += Math.sin(bobTime) * .07;
+      }
+
+      // M7: Animación de cámara al aterrizar (pitch hacia abajo durante 0.3s)
+      let landingPitchOffset = 0;
+      if (landingPauseTimer > 0) {
+        // Pitch baja y vuelve progresivamente con una curva senoidal
+        const t7 = 1 - (landingPauseTimer / 0.3);
+        landingPitchOffset = Math.sin(t7 * Math.PI) * 0.28;
+      }
+
+      // Apply rotation + shake
+      camera.rotation.order = 'YXZ';
+      camera.rotation.y = player.yaw + cameraShakeX;
+      camera.rotation.x = player.pitch + cameraShakeY + landingPitchOffset;
+      camera.rotation.z = 0;
+
+      // ── Flashlight follow camera (sin allocations) ──
+      _flEuler.copy(camera.rotation);
+      // Dirección forward de la cámara
+      _flDir.set(0, 0, -1).applyEuler(_flEuler);
+      // Posición: ligeramente a la derecha y abajo del ojo (efecto linterna de mano)
+      _flOffset.set(0.28, -0.12, 0).applyEuler(_flEuler);
+      flashlight.position.copy(camera.position).add(_flOffset);
+      flashlightTarget.position.copy(camera.position).addScaledVector(_flDir, 16);
+      flashFill.position.copy(flashlight.position);
+      flashFillTarget.position.copy(camera.position).addScaledVector(_flDir, 10);
+      // Parpadeo sutil — realista sin coste de rendimiento
+      const flicker = 1 + Math.sin(survivalTime * 47.3) * 0.018 + Math.sin(survivalTime * 31.1) * 0.012;
+      flashlight.intensity = 5.5 * flicker;
+      flashFill.intensity = 1.8 * flicker;
+
+      // ── M5: Dash update
+      if (dashActive) {
+        dashTimer -= dt;
+        if (dashTimer <= 0) { dashActive = false; }
+        else {
+          const dashSpd = player.speed * DASH_SPEED_MULT * dt;
+          const dpos = slideMove(camera.position.x, camera.position.z, dashDirX * dashSpd, dashDirZ * dashSpd, player.RADIUS);
+          camera.position.x = dpos.x; camera.position.z = dpos.z;
+        }
+      }
+      if (dashCooldown > 0) {
+        dashCooldown -= dt;
+        if (dashCooldown < 0) dashCooldown = 0;
+      }
+      // HUD dash cooldown
+      if (dashHUDEl) {
+        if (dashCooldown > 0.1) { dashHUDEl.textContent = 'DASH ' + dashCooldown.toFixed(1) + 's'; dashHUDEl.style.display = 'block'; }
+        else { dashHUDEl.style.display = 'none'; }
+      }
+      updateEnemies(dt);
+
+      // ── Find closest enemy
+      let minDist = 999;
+      enemies.forEach(e => {
+        const dx = camera.position.x - e.sprite.position.x;
+        const dz = camera.position.z - e.sprite.position.z;
+        const d = Math.sqrt(dx * dx + dz * dz);
+        if (d < minDist) minDist = d;
+      });
+
+      // M20: detectar close calls
+      if (minDist < 3 && !wasCloseCall) { wasCloseCall = true; }
+      else if (minDist >= 5 && wasCloseCall) { closeCalls++; wasCloseCall = false; }
+      // M18: logro distancia mínima
+      checkAchievementMinDist(minDist);
+      // M26: haptics rozante
+      if (minDist < 3 && player.alive) {
+        if (!wasCloseCall) if (navigator.vibrate) navigator.vibrate(80);
+      }
+
+      // ── Effects
+      updateEffects(dt, minDist);
+      updatePuzzle();
+      updateHUD();
+      updateSparks(dt);
+      updateGenParticles(dt);
+      updateTrails(dt);
+      updateEnemySteps(dt);
+      if (minimapEnabled && minimapCanvas) { minimapCanvas.style.display = 'block'; drawMinimap(); }
+      updateQuotes(dt);
+      updateBlackout(dt);
+
+      // M13: niebla dinamica en los ultimos 60s
+      const timeLeft = TOTAL_TIME - survivalTime;
+      if (timeLeft < 60 && timeLeft >= 0) {
+        scene.fog.density = 0.022 + (0.048 - 0.022) * (1 - timeLeft / 60);
+      } else if (timeLeft >= 60) {
+        scene.fog.density = 0.022;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // ───── M14: Minimapa ─────
+    const minimapCanvas = document.getElementById('minimapCanvas');
+    const mmCtx = minimapCanvas ? minimapCanvas.getContext('2d') : null;
+    minimapCanvas.width = 140; minimapCanvas.height = 140;
+    let minimapEnabled = true;
+
+    function drawMinimap() {
+      if (!mmCtx || !minimapEnabled) return;
+      const W = 140, H = 140;
+      const scale = W / GROUND_SIZE;
+      function toMM(wx, wz) { return { x: (wx + HALF) * scale, y: (wz + HALF) * scale }; }
+      mmCtx.clearRect(0, 0, W, H);
+      // Buildings
+      mmCtx.fillStyle = 'rgba(80,80,90,0.7)';
+      BUILDINGS.forEach(([cx, cz, w, d]) => {
+        const p = toMM(cx - w / 2, cz - d / 2);
+        mmCtx.fillRect(p.x, p.y, w * scale, d * scale);
+      });
+      // Generators
+      generatorMeshes.forEach(g => {
+        const p = toMM(g.x, g.z);
+        mmCtx.beginPath();
+        mmCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        mmCtx.fillStyle = g.activated ? '#00ff44' : '#ff2222';
+        mmCtx.fill();
+      });
+      // Exit (cyan dot when open)
+      if (exitOpen) {
+        const ep = toMM(EXIT_X, EXIT_Z);
+        mmCtx.beginPath();
+        mmCtx.arc(ep.x, ep.y, 4, 0, Math.PI * 2);
+        mmCtx.fillStyle = '#00ffcc';
+        mmCtx.fill();
+      }
+      // Player triangle
+      const pp = toMM(camera.position.x, camera.position.z);
+      mmCtx.save();
+      mmCtx.translate(pp.x, pp.y);
+      mmCtx.rotate(-player.yaw);
+      mmCtx.beginPath();
+      mmCtx.moveTo(0, -5); mmCtx.lineTo(-3, 4); mmCtx.lineTo(3, 4);
+      mmCtx.closePath();
+      mmCtx.fillStyle = '#ffffff';
+      mmCtx.fill();
+      mmCtx.restore();
+    }
+
+    // Wire minimapToggle in settings
+    const minimapToggleBtn = document.getElementById('minimapToggle');
+    if (minimapToggleBtn) {
+      minimapToggleBtn.addEventListener('click', () => {
+        minimapEnabled = !minimapEnabled;
+        minimapToggleBtn.textContent = minimapEnabled ? 'ON' : 'OFF';
+        minimapToggleBtn.style.background = minimapEnabled ? '#001a00' : '#1a0000';
+        minimapToggleBtn.style.borderColor = minimapEnabled ? '#005500' : '#550000';
+        minimapToggleBtn.style.color = minimapEnabled ? '#44aa66' : '#884444';
+        if (minimapCanvas) minimapCanvas.style.display = minimapEnabled && gameState === 'playing' ? 'block' : 'none';
+      });
+    }
+    (function () {
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsPanel = document.getElementById('settingsPanel');
+      const settingsOvl = document.getElementById('settingsOverlay');
+      const volSlider = document.getElementById('volSlider');
+      const volVal = document.getElementById('volVal');
+      const musicSlider = document.getElementById('musicSlider');
+      const musicVal = document.getElementById('musicVal');
+      const sensSlider = document.getElementById('sensSlider');
+      const sensVal = document.getElementById('sensVal');
+      const touchToggleBtn = document.getElementById('touchToggle');
+      const closeBtn = document.getElementById('settingsClose');
+      let touchEnabled = true;
+
+      function openSettings() {
+        if (gameState === 'playing' && !isMobile) document.exitPointerLock();
+        // M28: Pause real
+        if (gameState === 'playing') gamePaused = true;
+        settingsPanel.style.display = 'flex';
+        settingsOvl.style.display = 'block';
+        if (isMobile) {
+          JOYZONE.style.display = 'none';
+          LOOKZONE.style.display = 'none';
+          if (TOUCH_SPRINT) TOUCH_SPRINT.style.display = 'none';
+          if (TOUCH_INTERACT) TOUCH_INTERACT.style.display = 'none';
+          const touchPauseBtn = document.getElementById('touchPause');
+          if (touchPauseBtn) touchPauseBtn.style.display = 'none';
+        }
+      }
+      function closeSettings() {
+        settingsPanel.style.display = 'none';
+        settingsOvl.style.display = 'none';
+        // M28: Resume
+        if (gameState === 'playing') {
+          gamePaused = false;
+          if (!isMobile) canvas.requestPointerLock();
+          else {
+            if (touchEnabled) { JOYZONE.style.display = 'block'; LOOKZONE.style.display = 'block'; }
+            if (TOUCH_SPRINT) TOUCH_SPRINT.style.display = 'flex';
+            const touchPauseBtn = document.getElementById('touchPause');
+            if (touchPauseBtn) touchPauseBtn.style.display = 'flex';
+          }
+        }
+      }
+
+      // M28: Escape listener
+      document.addEventListener('keydown', e => {
+        if (e.code === 'Escape' && gameState === 'playing') {
+          if (gamePaused) closeSettings();
+          else openSettings();
+        }
+      });
+
+      // M28: Touch pause listener
+      const touchPauseBtn = document.getElementById('touchPause');
+      if (touchPauseBtn) {
+        touchPauseBtn.addEventListener('touchstart', e => {
+          e.stopPropagation();
+          openSettings();
+        }, { passive: true });
+      }
+
+      settingsBtn.addEventListener('click', openSettings);
+      closeBtn.addEventListener('click', closeSettings);
+      settingsOvl.addEventListener('click', closeSettings);
+
+      volSlider.addEventListener('input', () => {
+        masterVolume = Number(volSlider.value) / 100;
+        volVal.textContent = `${volSlider.value}%`;
+      });
+
+      musicSlider.addEventListener('input', () => {
+        musicVolume = Number(musicSlider.value) / 100;
+        musicVal.textContent = `${musicSlider.value}%`;
+        if (musicEl) musicEl.volume = musicVolume;
+      });
+
+      sensSlider.addEventListener('input', () => {
+        // Map range 1-10 → 0.0009-0.0036
+        mouseSens = 0.0009 + (Number(sensSlider.value) - 1) / 9 * 0.0027;
+        sensVal.textContent = sensSlider.value;
+      });
+
+      touchToggleBtn.addEventListener('click', () => {
+        touchEnabled = !touchEnabled;
+        touchToggleBtn.textContent = touchEnabled ? 'ON' : 'OFF';
+        touchToggleBtn.classList.toggle('on', touchEnabled);
+        if (isMobile) {
+          JOYZONE.style.display = touchEnabled ? 'block' : 'none';
+          LOOKZONE.style.display = touchEnabled ? 'block' : 'none';
+        }
+      });
+    })();
+
+    // ───── Fullscreen prompt ─────
+    (function () {
+      const fsPrompt = document.getElementById('fsPrompt');
+      const fsBtnYes = document.getElementById('fsBtnYes');
+      const fsBtnNo = document.getElementById('fsBtnNo');
+      let fsShown = false;
+
+      function showFsPrompt() {
+        if (fsShown) return;
+        fsShown = true;
+        fsPrompt.style.display = 'flex';
+      }
+      function hideFsPrompt() {
+        fsPrompt.style.display = 'none';
+      }
+      function enterFullscreen() {
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen().catch(() => { });
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
+
+      fsBtnYes.addEventListener('click', () => { enterFullscreen(); hideFsPrompt(); });
+      fsBtnNo.addEventListener('click', () => { hideFsPrompt(); });
+
+      // Show after page load (on mobile after orientation, on PC immediately)
+      if (isMobile) {
+        // Móvil: mostrar al detectar landscape
+        function checkAndShow() {
+          if (window.innerWidth > window.innerHeight) showFsPrompt();
+        }
+        window.addEventListener('orientationchange', () => setTimeout(checkAndShow, 400));
+        setTimeout(checkAndShow, 600);
+      } else {
+        // PC: mostrar al cargar la página directamente
+        setTimeout(showFsPrompt, 400);
+      }
+    })();
+
+    // ───── Tutorial hint ─────
+    const tutorialHintEl = document.getElementById('tutorialHint');
+    function showTutorialHint() {
+      tutorialHintEl.style.opacity = '1';
+      setTimeout(() => { tutorialHintEl.style.opacity = '0'; }, 7000);
+    }
+
+    // ───── M18: Logros ─────
+    const ACHIEVEMENTS = [
+      { id: 'first_escape', name: 'Primer escape', desc: 'Ganar una vez' },
+      { id: 'veteran', name: 'Veterano', desc: 'Ganar 5 veces' },
+      { id: 'no_sprint', name: 'Sin correr', desc: 'Ganar sin usar sprint' },
+      { id: 'on_fire', name: 'En llamas', desc: 'Activar los 3 generadores en menos de 90 segundos' },
+      { id: 'limit', name: 'Limite', desc: 'Sobrevivir con un nextbot a menos de 2.5 unidades' },
+      { id: 'nightmare_done', name: 'Pesadilla superada', desc: 'Ganar en modo pesadilla' },
+      { id: 'speedrun', name: 'Velocista', desc: 'Ganar en menos de 2 min 30 seg' },
+      { id: 'reckless', name: 'Temerario', desc: 'Activar un generador con un nextbot a menos de 5 unidades' },
+      { id: 'no_escape', name: 'Sin escape', desc: 'Morir 10 veces' },
+      { id: 'last_words', name: 'Ultimas palabras', desc: 'Oir las 5 frases distintas de Peereira en una partida' }
+    ];
+    function getAchievements() { try { return JSON.parse(localStorage.getItem('pnb_ach') || '{}'); } catch { return {}; } }
+    function saveAchievements(obj) { localStorage.setItem('pnb_ach', JSON.stringify(obj)); }
+    function getUnseenAch() { try { return JSON.parse(localStorage.getItem('pnb_achUnseen') || '[]'); } catch { return []; } }
+    function saveUnseenAch(arr) { localStorage.setItem('pnb_achUnseen', JSON.stringify(arr)); }
+
+    function unlockAchievement(id) {
+      const ach = getAchievements();
+      if (ach[id]) return;
+      ach[id] = true;
+      saveAchievements(ach);
+      const unseen = getUnseenAch();
+      if (!unseen.includes(id)) { unseen.push(id); saveUnseenAch(unseen); }
+      updateAchievementDot();
+    }
+    function updateAchievementDot() {
+      const dot = document.getElementById('achievementDot');
+      if (!dot) return;
+      dot.style.display = getUnseenAch().length > 0 ? 'block' : 'none';
+    }
+
+    function renderAchievementsList() {
+      const list = document.getElementById('achievementsList');
+      if (!list) return;
+      const ach = getAchievements();
+      list.innerHTML = '';
+      ACHIEVEMENTS.forEach(a => {
+        const done = !!ach[a.id];
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:.35rem .5rem;border-bottom:1px solid #111122;';
+        row.innerHTML = done
+          ? `<div style="color:#fff;font-size:.78rem;letter-spacing:.5px">${a.name} <span style="color:#44ff88;font-size:.65rem">completado</span></div><div style="color:#555;font-size:.65rem">${a.desc}</div>`
+          : `<div style="color:#333;font-size:.78rem;letter-spacing:.5px">${a.name}</div><div style="color:#222;font-size:.65rem">Bloqueado</div>`;
+        list.appendChild(row);
+      });
+    }
+
+    // Per-session tracking for achievements
+    let achSprintUsed = false;
+    let achQuotesSeen = new Set();
+    let achRecklessThisSession = false;
+    let achLimitThisSession = false;
+    let achGenTimes = [];
+
+    function resetAchievementSession() {
+      achSprintUsed = false;
+      achQuotesSeen = new Set();
+      achRecklessThisSession = false;
+      achLimitThisSession = false;
+      achGenTimes = [];
+    }
+
+    // Hook sprint tracking
+    const _origKeydown = null; // already tracked via touchSprinting — intercept in animate
+    // Hook quote tracking — patch updateQuotes
+    const _updateQuotesOrig = updateQuotes;
+    // We patch inside animate by checking quoteIdx changes; simpler: track in updateQuotes
+    // We override after definition:
+
+    // Achievement checks called at appropriate events
+    function checkAchievementsOnWin() {
+      unlockAchievement('first_escape');
+      if (LS.wins >= 5) unlockAchievement('veteran');
+      if (!achSprintUsed) unlockAchievement('no_sprint');
+      if (nightmareMode || LS.nightmareWins > 0) unlockAchievement('nightmare_done');
+      if (survivalTime <= 150) unlockAchievement('speedrun');
+    }
+    function checkAchievementsOnDeath() {
+      if (LS.deaths >= 10) unlockAchievement('no_escape');
+    }
+    function checkAchievementsOnGenActivate(genIdx) {
+      achGenTimes.push(survivalTime);
+      if (achGenTimes.length === 3 && achGenTimes[2] - achGenTimes[0] <= 90) unlockAchievement('on_fire');
+      // Reckless: nextbot < 5u
+      let closest = 999;
+      enemies.forEach(e => {
+        const dx = camera.position.x - e.sprite.position.x, dz = camera.position.z - e.sprite.position.z;
+        closest = Math.min(closest, Math.sqrt(dx * dx + dz * dz));
+      });
+      if (closest < 5) unlockAchievement('reckless');
+    }
+    function checkAchievementMinDist(minDist) {
+      if (minDist < 2.5 && !achLimitThisSession) { achLimitThisSession = true; unlockAchievement('limit'); }
+    }
+
+    // Achievements panel wiring
+    const btnAch = document.getElementById('btnAchievements');
+    const achPanel = document.getElementById('achievementsPanel');
+    const achClose = document.getElementById('achievementsClose');
+    if (btnAch) {
+      btnAch.addEventListener('click', () => {
+        renderAchievementsList();
+        const unseen = getUnseenAch();
+        saveUnseenAch([]);
+        updateAchievementDot();
+        achPanel.style.display = 'flex';
+      });
+    }
+    if (achClose) {
+      achClose.addEventListener('click', () => { achPanel.style.display = 'none'; });
+    }
+    updateAchievementDot();
+    document.getElementById('btnStart').addEventListener('click', () => {
+      document.getElementById('startScreen').style.display = 'none';
+      if (isMobile) {
+        lockLandscape();
+        TOUCH_SPRINT.style.display = 'flex';
+      }
+      resetGame();
+    });
+    document.getElementById('btnRestart').addEventListener('click', () => {
+      if (isMobile) TOUCH_SPRINT.style.display = 'flex';
+      resetGame();
+    });
+    document.getElementById('btnRestartWin').addEventListener('click', () => {
+      if (isMobile) TOUCH_SPRINT.style.display = 'flex';
+      resetGame();
+    });
+
+    // Start render loop
+    renderRecordsBlock();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+
+</html>
